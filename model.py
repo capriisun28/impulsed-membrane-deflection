@@ -4,6 +4,7 @@ from scipy.integrate import solve_ivp
 from scipy.fft import dst, idst
 
 """
+# ignore this commented part this is just me referrring to will's code
 # dimensions of membrane
 # Should be the same, this is a square membrane
 width = 0.005
