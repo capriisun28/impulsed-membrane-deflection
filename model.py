@@ -46,21 +46,28 @@ ff = lambda x, y, t: (np.sin(2 * np.pi * 100 * x) * np.sin(
 '''
 
 frequency = 1
+
+
+
+
+use will's ffs in imesolver.py for verifications
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Parameters
-a = 1.0  # length of the membrane in x-direction (m)
-b = 1.0  # length of the membrane in y-direction (m)
-T = 1.0  # tension (N/m)
+# parameters
+a = 0.005  # length of the membrane in x-direction (m)
+b = 0.005  # length of the membrane in y-direction (m)
+rho = 2850 # mass density (kg/m^3)
+sigma = 250e6 # in plane pressure (MPa)
+T = rho * sigma  # tension (N/m)
 mu = 0.01  # area mass density (kg/m^2)
-c = 0.1  # damping coefficient (Pa/(m/s))
-modes = 10  # number of modes to consider
+eta = 0.1  # damping coefficient (Pa/(m/s))
+modes = 100  # number of modes to consider    # prob try a lot more modes
 t_max = 10.0  # simulation time (s)
 dt = 0.01  # time step (s)
-p0 = 1.0  # pressure amplitude
+p0 = 1.0  # pressure amplitude # should i adjust this later?
 
 # eigenfns
 def phi_mn(x, y, m, n, a, b):
@@ -78,27 +85,29 @@ def p_smn(m, n, x0, x1, y0, y1, a, b):
 # initial conditions
 wmn = np.zeros((modes, modes))
 wmn_dot = np.zeros((modes, modes))
+wmn[0, 0] = 1  # testing testing!! just the phi_1_1 mode
 
 # time array
 t = np.arange(0, t_max, dt)
-impulse_times = [0,1,2,3,4]
+impulse_times = [1, 3, 4, 7, 9] #i want to change the impulse 
 
 # array to store displacement
 w_total = np.zeros((len(t), 100, 100))
 
-# Spatial grid
+# spatial grid
 x = np.linspace(0, a, 100)
 y = np.linspace(0, b, 100)
 X, Y = np.meshgrid(x, y) #check later, mgrid instead?
 
 # looping through timesteps
-for ti in range(len(t)):
+ti = 0
+while ti in range(len(t)):
     w = np.zeros_like(X)
     for m in range(1, modes + 1):
         for n in range(1, modes + 1):
             k = eigvals(m, n, a, b)
             omega0_mn = np.sqrt(T * k**2 / mu)
-            alpha = c / (2 * mu)
+            alpha = eta / (2 * mu)
             omega_star = np.sqrt(omega0_mn**2 - alpha**2)
             
             # free oscillation solution
@@ -113,13 +122,67 @@ for ti in range(len(t)):
             w += wmn[m-1, n-1] * phi_mn(X, Y, m, n, a, b)
     
     w_total[ti] = w
+    ti += dt
 
 # plotting the results  #the plots take a bit to run
+# this plot should be the main membrane response
 plt.figure(figsize=(10, 6))
-for ti in range(0, len(t), int(len(t)/10)):
+for ti in range(0, len(t), int(len(t)/10)): # adjust later, have the factor that len(t) is divided by depend on time steps
     plt.contourf(X, Y, w_total[ti], levels=20, cmap='viridis') #here
     plt.colorbar()
-    plt.title(f'Time = {t[ti]:.2f} s')
+    plt.title(f'Membrane Displacement Response at Time = {t[ti]:.2f} s')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.show()
+
+# also plotting here what the force function looks like
+
+# plotting the displacement as a function of time
+def plot_displacement_vs_time(w_total, t, x, y, output_dir='membrane-sim'):
+    avg_displacement = np.mean(w_total, axis=(1, 2)) # this is because w_total is an array [# time steps, # x's, # y's]
+    plt.plot(t, avg_displacement)
+    plt.xlabel('Time')
+    plt.ylabel('Average Displacement (w)')
+    plt.title('Average Displacement vs. Time')
+    plt.savefig(f'avg_displacement_v_time.png', format="png")
+    plt.show()
+
+# plotting the displacement along a given plane (e.g., y = b/2)
+def plot_cutout_along_plane(w_total, x, y, plane='y', value=0.5, output_dir='membrane-sim'):
+    plt.figure()
+    if plane == 'y':
+        idx = (np.abs(y - value)).argmin()
+        for ti in range(len(t)):
+            plt.plot(x, w_total[ti, idx, :], label=f'Time = {t[ti]:.2f}s')
+        plt.xlabel('Distance along membrane (x)')
+    elif plane == 'x':
+        idx = (np.abs(x - value)).argmin()
+        for ti in range(len(t)):
+            plt.plot(y, w_total[ti, :, idx], label=f'Time = {t[ti]:.2f}s')
+        plt.xlabel('Distance along membrane (y)')
+    plt.ylabel('Displacement (w)')
+    plt.title(f'Displacement along {plane}={value}')
+    plt.legend()
+    plt.savefig(f'displacement_{plane}_{value}_cutout_{ti}.png', format="png")
+    plt.show()
+
+"""
+# plot individual modes over time (just w_1_1, w_1_2)
+def plot_individual_modes(wmn, t, output_dir='membrane_plots'):
+    plt.figure()
+    plt.plot(t, wmn[:, 0, 0], label='w_1_1')
+    plt.plot(t, wmn[:, 0, 1], label='w_1_2')
+    plt.xlabel('Time')
+    plt.ylabel('Displacement')
+    plt.title('Individual Modes Over Time')
+    plt.legend()
+    plt.savefig(os.path.join(output_dir, 'individual_modes_over_time.png'))
+    plt.close()
+"""
+
+
+# calls the plotting fn
+plot_displacement_vs_time(w_total, t, x, y)
+
+# calls the plotting fn
+plot_cutout_along_plane(w_total, x, y, plane='y', value=b/2)
