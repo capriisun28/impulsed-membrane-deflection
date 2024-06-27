@@ -12,11 +12,12 @@ rho = 2850 # mass density (kg/m^3)
 sigma = 250e6 # in plane pressure (MPa)
 T = h * sigma  # tension (N/m)
 mu = rho * h  # area mass density (kg/m^2)
-eta = 0.1  # damping coefficient (Pa/(m/s))
-modes = 100  # number of modes to consider    # prob try a lot more modes
-t_max = 10.0  # simulation time (s)
-dt = 0.01  # time step (s)
+eta = 0  # damping coefficient (Pa/(m/s))
+modes = 100 # number of modes to consider    # prob try a lot more modes
+t_max = 3e-5  # simulation time (s)
+dt = 1e-6  # time step (s)
 p0 = 1.0  # pressure amplitude # should i adjust this later?
+
 
 """
 # testing old parameters again for debugging purposes
@@ -27,8 +28,8 @@ mu = 0.01  # area mass density (kg/m^2)
 eta = 0.1  # damping coefficient (Pa/(m/s))
 modes = 10  # number of modes to consider
 t_max = 10.0  # simulation time (s)
-dt = 1  # time step (s)
-# dt = 0.01 #commented out for debugging
+dt = 0.01  # time step (s)
+# dt = 1 #commented out for debugging
 p0 = 1.0  # pressure amplitude
 """
 
@@ -48,11 +49,11 @@ def p_smn(m, n, x0, x1, y0, y1, a, b):
 # initial conditions
 wmn = np.zeros((modes, modes))
 wmn_dot = np.zeros((modes, modes))
-wmn[0, 0] = 1  # testing testing!! just the phi_1_1 mode
+#wmn[0, 0] = 1  # testing testing!! just the phi_1_1 mode
 
 # time array
 t = np.arange(0, t_max, dt)
-impulse_times = [1]
+impulse_times = [0, 1, 2, 3, 4]
 # impulse_times = [0.2, 0.3, 1, 1.1]
 # impulse_times = [1, 3, 4, 7, 9] commented out for debugging
 
@@ -73,8 +74,9 @@ while ti in range(len(t)):
             k = eigvals(m, n, a, b)
             omega0_mn = np.sqrt(T * k**2 / mu)
             alpha = eta / (2 * mu)
-            print(alpha) #printing alpha to terminal to debug
+            #print(alpha) #printing alpha to terminal to debug
             omega_star = np.sqrt(omega0_mn**2 - alpha**2)
+            #print(omega_star/2*np.pi)
             
             # free oscillation solution
             A = wmn[m-1, n-1]
@@ -88,7 +90,7 @@ while ti in range(len(t)):
             w += wmn[m-1, n-1] * phi_mn(X, Y, m, n, a, b)
     
     w_total[ti] = w
-    ti += dt
+    ti += 1
 
 # plotting the results  #the plots take a bit to run
 # this plot should be the main membrane response
@@ -100,6 +102,7 @@ for ti in range(0, len(t), int(len(t)/10)): # adjust later, have the factor that
     plt.xlabel('x')
     plt.ylabel('y')
     plt.show()
+
 
 # plotting the displacement as a function of time
 def plot_displacement_vs_time(w_total, t, x, y):
