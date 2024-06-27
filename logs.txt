@@ -1,17 +1,18 @@
 current agenda items:
 
+- plotting just w_1_1, w_1_2 (debugging the plotting errors)
+- fix color bars for membrane response
+- make slides with plots (don't forget slide numbers!, nice words, etc)
+- brief synopsis (high level)
+- piecing together a final report LaTeX draft, due next fri, share with adam, tom
+- start thinking about poster presentation
+
+things that have been done:
+
 - plotting just phi_1_1
-- plotting just w_1_1, w_1_2
-
 - have plots of membrane displacement along a cutout
-- have plots of average displacement over time, and should have plots of 
-  just displacement some displacement modes over time (w_1_1, w_1_2)..
-  ... once i finish debugging why plots look weird, that is..
-  - concerned that plotting looks like just a positive response, and not some sort of sine wave
-
-- plots should be able to be saved to image png files
+- have plots of average displacement over time
+- plots are now saved to image png files
  (these files will be created upon running the script)
-
-- other to-dos i'm working on: starting to piece together a final report LaTeX draft, due next fri
 
 
