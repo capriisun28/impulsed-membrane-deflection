@@ -4,58 +4,6 @@ from scipy.integrate import solve_ivp
 from scipy.fft import dst, idst
 
 """
-# ignore this commented part this is just me referrring to will's code
-# dimensions of membrane
-# Should be the same, this is a square membrane
-width = 0.005
-height = 0.005
-# associated membrane quantities
-sigma = 250e6 
-eta = 1
-rho = 2850
-h = 100e-9
-# number of sections of membrane in the x (nx) and y (ny) directions
-nx = 21
-ny = 21
-
-
-#End time of the simulation in seconds
-time_finish = 2
-
-#Number of time steps included in the simulation
-time_steps = 10
-
-#array of time values
-time = np.linspace(0, time_finish, time_steps)
-
-'''
-Here are some ways of creating a time dependent forcing function. The 'frequency' variable is useful for simulating
-Gaussian functions or eigenfunction pressure functions at a given sinusoidal time depedence. Some examples are commented
-out since only one ff function should be used.
-
-frequency = 1 #ask if this i should have based on webb model
-# ff = lambda x, y, t: np.sin(2 * np.pi * 200 * x) * np.sin(2 * np.pi * 100 * y) + np.sin(2 * np.pi * 100 * x) * np.sin(
-#     2 * np.pi * 100 * y) + np.sin(2 * np.pi * 300 * x) * np.sin(2 * np.pi * 200 * y) * np.sin(2 * np.pi * frequency * t)
-
-# ff = lambda x, y, t: ( np.sin(2 * np.pi * 100 * x) * np.sin(
-#     2 * np.pi * 100 * y)) * np.sin(2 * np.pi * frequency * t)
-
-
-ff = lambda x, y, t: (np.sin(2 * np.pi * 100 * x) * np.sin(
-    2 * np.pi * 100 * y)) * np.sin(2 * np.pi * frequency * t)
-'''
-
-frequency = 1
-
-
-
-
-use will's ffs in imesolver.py for verifications
-"""
-
-import numpy as np
-import matplotlib.pyplot as plt
-
 # parameters
 a = 0.005  # length of the membrane in x-direction (m)
 b = 0.005  # length of the membrane in y-direction (m)
@@ -68,6 +16,18 @@ modes = 100  # number of modes to consider    # prob try a lot more modes
 t_max = 10.0  # simulation time (s)
 dt = 0.01  # time step (s)
 p0 = 1.0  # pressure amplitude # should i adjust this later?
+"""
+
+# testing old parameters again for debugging purposes
+a = 1.0  # length of the membrane in x-direction (m)
+b = 1.0  # length of the membrane in y-direction (m)
+T = 1.0  # tension (N/m)
+mu = 0.01  # area mass density (kg/m^2)
+eta = 0.1  # damping coefficient (Pa/(m/s))
+modes = 10  # number of modes to consider
+t_max = 10.0  # simulation time (s)
+dt = 0.01  # time step (s)
+p0 = 1.0  # pressure amplitude
 
 # eigenfns
 def phi_mn(x, y, m, n, a, b):
@@ -89,7 +49,8 @@ wmn[0, 0] = 1  # testing testing!! just the phi_1_1 mode
 
 # time array
 t = np.arange(0, t_max, dt)
-impulse_times = [1, 3, 4, 7, 9] #i want to change the impulse 
+impulse_times = [1]
+# impulse_times = [1, 3, 4, 7, 9] commented out for debugging
 
 # array to store displacement
 w_total = np.zeros((len(t), 100, 100))
@@ -135,10 +96,8 @@ for ti in range(0, len(t), int(len(t)/10)): # adjust later, have the factor that
     plt.ylabel('y')
     plt.show()
 
-# also plotting here what the force function looks like
-
 # plotting the displacement as a function of time
-def plot_displacement_vs_time(w_total, t, x, y, output_dir='membrane-sim'):
+def plot_displacement_vs_time(w_total, t, x, y):
     avg_displacement = np.mean(w_total, axis=(1, 2)) # this is because w_total is an array [# time steps, # x's, # y's]
     plt.plot(t, avg_displacement)
     plt.xlabel('Time')
@@ -148,7 +107,7 @@ def plot_displacement_vs_time(w_total, t, x, y, output_dir='membrane-sim'):
     plt.show()
 
 # plotting the displacement along a given plane (e.g., y = b/2)
-def plot_cutout_along_plane(w_total, x, y, plane='y', value=0.5, output_dir='membrane-sim'):
+def plot_cutout_along_plane(w_total, x, y, plane='y', value=0.5):
     plt.figure()
     if plane == 'y':
         idx = (np.abs(y - value)).argmin()
@@ -181,8 +140,48 @@ def plot_individual_modes(wmn, t, output_dir='membrane_plots'):
 """
 
 
-# calls the plotting fn
+# calls the plotting fn for displacement v time
 plot_displacement_vs_time(w_total, t, x, y)
 
-# calls the plotting fn
+# calls the plotting fn for cutout of the response
 plot_cutout_along_plane(w_total, x, y, plane='y', value=b/2)
+
+# uncomment to check individual modes of the displacement response
+# plot_individual_modes(wmn, t,)
+
+"""
+# ignore this commented part this is just me referrring to will's code
+# dimensions of membrane
+# Should be the same, this is a square membrane
+width = 0.005
+height = 0.005
+# associated membrane quantities
+sigma = 250e6 
+eta = 1
+rho = 2850
+h = 100e-9
+# number of sections of membrane in the x (nx) and y (ny) directions
+nx = 21
+ny = 21
+
+'''
+Here are some ways of creating a time dependent forcing function. The 'frequency' variable is useful for simulating
+Gaussian functions or eigenfunction pressure functions at a given sinusoidal time depedence. Some examples are commented
+out since only one ff function should be used.
+
+frequency = 1 #ask if this i should have based on webb model
+# ff = lambda x, y, t: np.sin(2 * np.pi * 200 * x) * np.sin(2 * np.pi * 100 * y) + np.sin(2 * np.pi * 100 * x) * np.sin(
+#     2 * np.pi * 100 * y) + np.sin(2 * np.pi * 300 * x) * np.sin(2 * np.pi * 200 * y) * np.sin(2 * np.pi * frequency * t)
+
+# ff = lambda x, y, t: ( np.sin(2 * np.pi * 100 * x) * np.sin(
+#     2 * np.pi * 100 * y)) * np.sin(2 * np.pi * frequency * t)
+
+
+ff = lambda x, y, t: (np.sin(2 * np.pi * 100 * x) * np.sin(
+    2 * np.pi * 100 * y)) * np.sin(2 * np.pi * frequency * t)
+'''
+
+frequency = 1
+
+use will's ffs in imesolver.py for verifications
+"""
