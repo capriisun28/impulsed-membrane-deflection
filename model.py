@@ -13,7 +13,7 @@ sigma = 250e6 # in plane pressure (MPa)
 T = h * sigma  # tension (N/m)
 mu = rho * h  # area mass density (kg/m^2)
 eta = 0  # damping coefficient (Pa/(m/s))
-modes = 100 # number of modes to consider    # prob try a lot more modes
+modes = 10 # number of modes to consider    # prob try a lot more modes
 t_max = 3e-5  # simulation time (s)
 dt = 1e-6  # time step (s)
 p0 = 1.0  # pressure amplitude # should i adjust this later?
@@ -133,21 +133,28 @@ def plot_cutout_along_plane(w_total, x, y, plane='y', value=0.5):
     plt.savefig(f'displacement_{plane}_{value}_cutout_{ti}.png', format="png")
     plt.show()
 
-"""
 # plot individual modes over time (just w_1_1, w_1_2)
-def plot_individual_modes(wmn, t, output_dir='membrane_plots'):
+def plot_individual_modes(wmn, t):
     plt.figure()
-    plt.plot(t, wmn[:, 0, 0], label='w_1_1')
-    plt.plot(t, wmn[:, 0, 1], label='w_1_2')
+    plt.plot(t, wmn[0, :], label='w_1_1')
+    plt.plot(t, wmn[1, :], label='w_1_2')
     plt.xlabel('Time')
     plt.ylabel('Displacement')
     plt.title('Individual Modes Over Time')
     plt.legend()
-    plt.savefig(os.path.join(output_dir, 'individual_modes_over_time.png'))
+    plt.savefig('individual_modes_over_time.png', format = "png")
     plt.close()
-"""
 
 
+
+    plt.savefig(f'displacement_{plane}_{value}_cutout_{ti}.png', format="png")
+    plt.show()
+
+# plot individual modes over time (just w_1_1, w_1_2)
+def plot_individual_modes(wmn, t):
+    plt.figure()
+    plt.plot(t, wmn[0, 0, :], label='w_1_1')
+    plt.plot(t, wmn[:,
 # calls the plotting fn for displacement v time
 plot_displacement_vs_time(w_total, t, x, y)
 
@@ -155,7 +162,7 @@ plot_displacement_vs_time(w_total, t, x, y)
 plot_cutout_along_plane(w_total, x, y, plane='y', value=b/2)
 
 # uncomment to check individual modes of the displacement response
-# plot_individual_modes(wmn, t,)
+plot_individual_modes(wmn, t,)
 
 """
 # ignore this commented part this is just me referrring to will's code
