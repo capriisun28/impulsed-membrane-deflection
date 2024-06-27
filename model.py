@@ -3,21 +3,22 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.fft import dst, idst
 
-"""
+
 # parameters
 a = 0.005  # length of the membrane in x-direction (m)
 b = 0.005  # length of the membrane in y-direction (m)
+h = 5e-8 # membrane thickness
 rho = 2850 # mass density (kg/m^3)
 sigma = 250e6 # in plane pressure (MPa)
-T = rho * sigma  # tension (N/m)
-mu = 0.01  # area mass density (kg/m^2)
+T = h * sigma  # tension (N/m)
+mu = rho * h  # area mass density (kg/m^2)
 eta = 0.1  # damping coefficient (Pa/(m/s))
 modes = 100  # number of modes to consider    # prob try a lot more modes
 t_max = 10.0  # simulation time (s)
 dt = 0.01  # time step (s)
 p0 = 1.0  # pressure amplitude # should i adjust this later?
-"""
 
+"""
 # testing old parameters again for debugging purposes
 a = 1.0  # length of the membrane in x-direction (m)
 b = 1.0  # length of the membrane in y-direction (m)
@@ -26,8 +27,10 @@ mu = 0.01  # area mass density (kg/m^2)
 eta = 0.1  # damping coefficient (Pa/(m/s))
 modes = 10  # number of modes to consider
 t_max = 10.0  # simulation time (s)
-dt = 0.01  # time step (s)
+dt = 1  # time step (s)
+# dt = 0.01 #commented out for debugging
 p0 = 1.0  # pressure amplitude
+"""
 
 # eigenfns
 def phi_mn(x, y, m, n, a, b):
@@ -50,6 +53,7 @@ wmn[0, 0] = 1  # testing testing!! just the phi_1_1 mode
 # time array
 t = np.arange(0, t_max, dt)
 impulse_times = [1]
+# impulse_times = [0.2, 0.3, 1, 1.1]
 # impulse_times = [1, 3, 4, 7, 9] commented out for debugging
 
 # array to store displacement
@@ -69,6 +73,7 @@ while ti in range(len(t)):
             k = eigvals(m, n, a, b)
             omega0_mn = np.sqrt(T * k**2 / mu)
             alpha = eta / (2 * mu)
+            print(alpha) #printing alpha to terminal to debug
             omega_star = np.sqrt(omega0_mn**2 - alpha**2)
             
             # free oscillation solution
