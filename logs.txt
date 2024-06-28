@@ -7,6 +7,11 @@ current agenda items:
 - piecing together a final report LaTeX draft, due next fri, share with adam, tom
 - start thinking about poster presentation
 - debug: no longer showing displacement v time graphs when running script hmm
+- update github readme
+- have my loop be refector into a fn w a temporal response that returns the amplitude of the displacement
+- modulate everything so my script isnt so crowded (main file where i call the response fn over time and all the plots)- have my loo
+- plot just w_1_1
+
 
 things that have been done:
 
