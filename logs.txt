@@ -6,6 +6,7 @@ current agenda items:
 - brief synopsis (high level)
 - piecing together a final report LaTeX draft, due next fri, share with adam, tom
 - start thinking about poster presentation
+- debug: no longer showing displacement v time graphs when running script
 
 things that have been done:
 
