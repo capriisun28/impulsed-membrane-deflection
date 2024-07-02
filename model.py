@@ -85,7 +85,9 @@ class membrane_response:
         B = 0.0
 
         for t_index in range(len(t)):
+            #print(t_index)
             current_time = t[t_index]
+            #print(current_time) #debugging: so it's not properly picking up the impulse at time 0
 
             #w = np.zeros_like(self.X)
             for m in range(1, self.num_modes + 1):
@@ -97,32 +99,32 @@ class membrane_response:
                     omega_star = np.sqrt(omega0_mn**2 - self.alpha**2)
                     #print(omega_star/2*np.pi)
 
-                # Check if current time is at or past the next impulse
-                    if last_impulse_index + 1 < len(self.impulse_times) and current_time >= self.impulse_times[last_impulse_index + 1]:
-                        # Shift time reference
+                # checking if current time against next impulse
+                    if (last_impulse_index != 0 & last_impulse_index + 1 < len(self.impulse_times)) and \
+                        current_time >= self.impulse_times[last_impulse_index + 1]:
+
+                        # shift time reference
                         t_shifted = self.impulse_times[last_impulse_index + 1] - self.impulse_times[last_impulse_index]
 
-                        # Calculate initial conditions for wmn and wmn_dot at the time of the current impulse
+                        # calculate initial conditions for wmn and wmn_dot at the time of the current impulse
                         wmn_init = np.exp(-self.alpha * t_shifted) * (A * np.cos(self.omega_star * t_shifted) + B * np.sin(self.omega_star * t_shifted))
                         wmn_dot_init_minus = -self.alpha * wmn_init + self.omega_star * (-A * np.sin(self.omega_star * t_shifted) + B * np.cos(self.omega_star * t_shifted))
 
-                        # Apply the velocity jump condition
+                        # applying the velocity jump condition
                         wmn_dot_init = wmn_dot_init_minus + self.p0 * pS_mn / self.mu
 
-                        # Update coefficients A and B
+                        # updating A and B, impulse index
                         A = wmn_init
                         B = (wmn_dot_init + self.alpha * wmn_init) / self.omega_star
-
-                        # Update the most recent impulse index
                         last_impulse_index += 1
 
-                    # Calculate wmn at the current time with reference to the last impulse
+                    # calculating wmn at the current time with reference to the last impulse
                     t_shifted = current_time - self.impulse_times[last_impulse_index]
                     wmn = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
                     w_mn_arr[m - 1,n - 1] = wmn 
                     w_total[t_index] = wmn * np.sin(np.pi * self.X / self.a) * np.sin(np.pi * self.Y / self.b)
 
-        return t, w_total, w_mn_arr #should i be returning amplitude instead?
+        return t, w_total, w_mn_arr
     """
     # initial conditions
     wmn = np.zeros((modes, modes))
