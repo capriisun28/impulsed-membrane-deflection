@@ -107,8 +107,11 @@ class membrane_response:
                         t_shifted = self.impulse_times[last_impulse_index + 1] - self.impulse_times[last_impulse_index]
 
                         # calculate initial conditions for wmn and wmn_dot at the time of the current impulse
-                        wmn_init = np.exp(-self.alpha * t_shifted) * (A * np.cos(self.omega_star * t_shifted) + B * np.sin(self.omega_star * t_shifted))
-                        wmn_dot_init_minus = -self.alpha * wmn_init + self.omega_star * (-A * np.sin(self.omega_star * t_shifted) + B * np.cos(self.omega_star * t_shifted))
+                        wmn_init = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
+                        wmn_dot_init_minus = np.exp(-self.alpha * t_shifted) * (B * omega_star * np.cos(omega_star * t_shifted) - \
+                                                                                A * omega_star * np.sin(omega_star * t_shifted) - \
+                                                                                A * self.alpha * np.cos(omega_star * t_shifted) - \
+                                                                                B * self.alpha * np.sin(omega_star * t_shifted))
 
                         # applying the velocity jump condition
                         wmn_dot_init = wmn_dot_init_minus + self.p0 * pS_mn / self.mu
