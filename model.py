@@ -118,7 +118,7 @@ class membrane_response:
 
                         # updating A and B, impulse index
                         A = wmn_init
-                        B = (wmn_dot_init + self.alpha * wmn_init) / self.omega_star
+                        B = (wmn_dot_init + self.alpha * wmn_init) / omega_star
                         last_impulse_index += 1
 
                     # calculating wmn at the current time with reference to the last impulse
