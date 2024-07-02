@@ -1,24 +1,37 @@
 current agenda items:
 
-- plotting just w_1_1, w_1_2 (debugging the plotting errors)
+high priority:
+- debug: plots not showing again
+-   plotting just individual modes still weird (plot_individual_modes)
 - fix color bars for membrane response
-- make slides with plots (don't forget slide numbers!, nice words, etc)
+    - eventually to keep the color scale the same just find max and mins and pass it in as key value pairs
 - brief synopsis (high level)
-- piecing together a final report LaTeX draft, due next fri, share with adam, tom
+- finish as much as possible about final report draft about what sims can do once done debugging
+    - share w adam and tom
 - start thinking about poster presentation
-- debug: no longer showing displacement v time graphs when running script hmm
-- update github readme
-- have my loop be refector into a fn w a temporal response that returns the amplitude of the displacement
-- modulate everything so my script isnt so crowded (main file where i call the response fn over time and all the plots)- have my loo
-- plot just w_1_1
+- refactor code into multiple files
+- update abstract, turn in final draft
+
+lower priority:
+- brief synopsis (high level)
+- make slides with plots (don't forget slide numbers!, nice words, etc)
+- start thinking about poster presentation
+- for displacement against cutout fix key so displaying times correctly
+- clarify question, repeated here (also commented on line 44 of model.py): 
+    - for defining h for a membrane_response object (a membrane): 
+    ... something that is still confusing to me is that we are treating this and plotting it like a 2D membrane, 
+    ... but we also give it a height so as to define tension as such?
 
 
 things that have been done:
-
+- updated github readme
+- implemented proper velocity jump condition checking (hopefully it is accurate)
+- motivation section for final report draft
 - plotting just phi_1_1
 - have plots of membrane displacement along a cutout
 - have plots of average displacement over time
 - plots are now saved to image png files
  (these files will be created upon running the script)
+
 
 
