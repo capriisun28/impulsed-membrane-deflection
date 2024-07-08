@@ -1,31 +1,26 @@
 current agenda items:
 
 high priority:
-- debug: plots not showing again
--   plotting just individual modes still weird (plot_individual_modes)
+- start bringing in other plots (2D membrane deflection, avg displacement etc)
 - fix color bars for membrane response
     - eventually to keep the color scale the same just find max and mins and pass it in as key value pairs
-- finish as much as possible about final report draft about what sims can do once done debugging
-    - share w adam and tom
 - start thinking about poster presentation
 - refactor code into multiple modules
-- update abstract, turn in final draft
-- wmn as 3d array 
+- turn in final draft
+- plot finer time steps for wmn response, perhaps check more impulse times, also perhaps plot more modes?
 - test cases: we know the response should look like a damped harmonic oscillator
-- most citations in model
+- compute Q for each resonance as well
 
 lower priority:
 - brief synopsis (high level)
 - make slides with plots (don't forget slide numbers!, nice words, etc)
-- start thinking about poster presentation
 - for displacement against cutout fix key so displaying times correctly
-- clarify question, repeated here (also commented on line 44 of model.py): 
-    - for defining h for a membrane_response object (a membrane): 
-    ... something that is still confusing to me is that we are treating this and plotting it like a 2D membrane, 
-    ... but we also give it a height so as to define tension as such?
 
 
 things that have been done:
+- final abstract submitted!!! hoorayyyy
+- individual modes plots look ok
+- thoughts: should i be looping thru modes first, or thru time first? // both are fine
 - updated github readme
 - implemented proper velocity jump condition checking (hopefully it is accurate)
 - motivation section for final report draft
@@ -34,6 +29,12 @@ things that have been done:
 - have plots of average displacement over time
 - plots are now saved to image png files
  (these files will be created upon running the script)
+ - clarify question, repeated here (also commented on line 44 of model.py): 
+    - for defining h for a membrane_response object (a membrane): 
+    ... something that is still confusing to me is that we are treating this and plotting it like a 2D membrane, 
+    ... but we also give it a height so as to define tension as such?
+    -> this is because h will be on a small enough scale as compared to membrane length and width that it is feasible
+       to make this approximation
 
 
 

@@ -46,14 +46,15 @@ class membrane_response:
         w_total = np.zeros((len(t), self.X.shape[0], self.X.shape[1]))
         w_mn = np.zeros((len(t), self.num_modes, self.num_modes))
         last_impulse_index = 0
-        A = 1.0 
-        B = 1.0
+        A = 0.0 
+        B = 0.0
 
         for t_index in range(len(t)):
             #print(t_index)
             current_time = t[t_index]
-            print(current_time) #debugging: this is making sure it enters the loop
-            print(last_impulse_index) #debugging: this is seeing if it even find the next impulses
+            print('current time:', current_time) #debugging: this is making sure it enters the loop
+            print('impulse index: ', last_impulse_index) #debugging: this is seeing if it even find the next impulses
+            print('curr impulse time: ', self.impulse_times[last_impulse_index]) #debugging: debugging out of range error
 
             #w = np.zeros_like(self.X)
             for m in range(1, self.num_modes + 1):
@@ -67,13 +68,13 @@ class membrane_response:
 
                 # checking if current time against next impulse
                     #debugging that last_imp_index isn't being picked up: first if condition, when commented out, still outputs 0
-                    if (last_impulse_index != 0 or last_impulse_index + 1 < len(self.impulse_times)) and \
-                        current_time >= self.impulse_times[last_impulse_index + 1]:
+                    if  (last_impulse_index + 1 < len(self.impulse_times) and \
+                        (current_time >= self.impulse_times[last_impulse_index])):
                         print("hello i am the debugger :D")
 
                         # shift time reference
                         t_shifted = self.impulse_times[last_impulse_index + 1] - self.impulse_times[last_impulse_index]
-
+                        
                         # calculate initial conditions for wmn and wmn_dot at the time of the current impulse
                         wmn_init = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
                         wmn_dot_init_minus = np.exp(-self.alpha * t_shifted) * (B * omega_star * np.cos(omega_star * t_shifted) - \
@@ -89,9 +90,13 @@ class membrane_response:
                         B = (wmn_dot_init + self.alpha * wmn_init) / omega_star
                         last_impulse_index += 1
 
+                        #debugging w_mn plots not changing even when w_mn changes:
+                        print(A, B)
+
                     # calculating wmn at the current time with reference to the last impulse
                     t_shifted = current_time - self.impulse_times[last_impulse_index]
                     w_mn[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
+                    #print(w_mn[t_index, m - 1, n - 1])
                     w_total[t_index] = w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
 
         return t, w_total, w_mn
@@ -204,7 +209,7 @@ class membrane_response:
     def plot_individual_modes(self, w_mn, t):
         time_plot_arr = range(0, len(t), int(len(t)/10))
         plt.figure()
-        plt.plot(time_plot_arr, w_mn[time_plot_arr, 0, 0], label='w_1_1') 
+        plt.plot(t, w_mn[time_plot_arr, 8, 9], label='w_1_1') #m,n and n,m plot the same
         plt.xlabel('Time')
         plt.ylabel('Displacement')
         plt.title('Individual Modes Over Time')
@@ -214,7 +219,7 @@ class membrane_response:
 
 
 # calling membrane response
-impulse_times = [0,1e-6,2e-6,3e-6]
+impulse_times = [0,1e-6,2e-6]
 deflection = membrane_response(impulse_times)
 t, w_total, w_mn = deflection.calculate_response()
 
