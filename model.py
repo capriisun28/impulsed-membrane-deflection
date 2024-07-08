@@ -17,22 +17,7 @@ modes = 10 # number of modes to consider    # prob try a lot more modes
 t_max = 1e-5  # simulation time (s)
 dt = 1e-6  # time step (s)
 p0 = 1.0  # pressure amplitude # should i adjust this later?
-
-
-
-# testing old parameters again for debugging purposes
-a = 1.0  # length of the membrane in x-direction (m)
-b = 1.0  # length of the membrane in y-direction (m)
-T = 1.0  # tension (N/m)
-mu = 0.01  # area mass density (kg/m^2)
-eta = 0.1  # damping coefficient (Pa/(m/s))
-modes = 10  # number of modes to consider
-t_max = 10.0  # simulation time (s)
-dt = 0.01  # time step (s)
-# dt = 1 #commented out for debugging
-p0 = 1.0  # pressure amplitude
 """
-
 
 class membrane_response:
     def __init__(self, impulse_times, dt=1e-6, t_max=1e-5, a=0.005, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, alpha=0.1, eta=0):
@@ -59,8 +44,8 @@ class membrane_response:
 
 
     # eigenfns
-    def phi_mn(self, x, y, m, n, a, b):
-        return (2 / np.sqrt(a * b)) * np.sin(m * np.pi * x / a) * np.sin(n * np.pi * y / b)
+    def phi_mn(self, m, n):
+        return (2 / np.sqrt(self.a * self.b)) * np.sin(m * np.pi * self.x / self.a) * np.sin(n * np.pi * self.y / self.b)
 
     # eigenvalues
     def eigvals(self, m, n, a, b):
@@ -78,11 +63,12 @@ class membrane_response:
     """
     def calculate_response(self):
         t = np.arange(0, self.t_max, self.dt)
-        w_total = np.zeros((len(t), self.X.shape[0], self.X.shape[1])) #check this, p sure should be right :D
-        w_mn_arr = np.zeros((self.num_modes, self.num_modes)) #this array is just to make it easy to plot/check response of individual modes
+        w_total = np.zeros((len(t), self.X.shape[0], self.X.shape[1])) #check this, p sure should be right :D. representing it as a 3d array
+        w_mn = np.zeros((len(t), self.num_modes, self.num_modes))
+        #w_mn_arr = np.zeros((self.num_modes, self.num_modes)) #this array is just to make it easy to plot/check response of individual modes
         last_impulse_index = 0
-        A = 0.0
-        B = 0.0
+        A = 1.0 
+        B = 1.0
 
         for t_index in range(len(t)):
             #print(t_index)
@@ -123,11 +109,12 @@ class membrane_response:
 
                     # calculating wmn at the current time with reference to the last impulse
                     t_shifted = current_time - self.impulse_times[last_impulse_index]
-                    wmn = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
-                    w_mn_arr[m - 1,n - 1] = wmn 
-                    w_total[t_index] = wmn * np.sin(np.pi * self.X / self.a) * np.sin(np.pi * self.Y / self.b)
+                    # i agree that wmn should be an array instead of what i was doing before. 
+                    w_mn[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
+                    # w_mn_arr[m - 1, n - 1] = w_mn[m * n][1] 
+                    w_total[t_index] = w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
 
-        return t, w_total, w_mn_arr
+        return t, w_total, w_mn
     """
     # initial conditions
     wmn = np.zeros((modes, modes))
@@ -175,6 +162,8 @@ class membrane_response:
         w_total[ti] = w
         ti += 1
         """
+    
+    
     def plot_displacement(self, w_total, t):
         plt.figure(figsize=(10, 6))
         for ti in range(len(t)): # adjust later, have the factor that len(t) is divided by depend on time steps
@@ -229,11 +218,13 @@ class membrane_response:
         plt.legend()
         plt.savefig(f'displacement_{plane}_{value}_cutout_{ti}.png', format="png")
         plt.show()
+    
 
     # plot individual modes over time (just w_1_1)
-    def plot_individual_modes(self, w_mn_arr, t):
+    def plot_individual_modes(self, w_mn, t):
+        time_plot_arr = range(0, len(t), int(len(t)/10))
         plt.figure()
-        plt.plot(t, w_mn_arr[0,0], label='w_1_1') 
+        plt.plot(time_plot_arr, w_mn[time_plot_arr, 0, 0], label='w_1_1') 
         plt.xlabel('Time')
         plt.ylabel('Displacement')
         plt.title('Individual Modes Over Time')
@@ -243,19 +234,39 @@ class membrane_response:
 
 
 # calling membrane response
-impulse_times = [0]
+impulse_times = [0,1,2,3]
 deflection = membrane_response(impulse_times)
-t, w_total, w_mn_arr = deflection.calculate_response()
+t, w_total, w_mn = deflection.calculate_response()
+
+print(t)
 
 # plotting the results  #the plots take a bit to run
 # this plot should be the main membrane response
-deflection.plot_displacement(w_total, t)
+#deflection.plot_displacement(w_total, t)
+
 # calls the plotting fn for displacement v time
-deflection.plot_displacement_vs_time(w_total, t)
+#deflection.plot_displacement_vs_time(w_total, t)
+
 # calls the plotting fn for avg displacement v time
-deflection.plot_avg_displacement_vs_time(w_total, t)
+#deflection.plot_avg_displacement_vs_time(w_total, t)
+
 # calls the plotting fn for cutout of the response
-cutout_line = (deflection.b)/2
-deflection.plot_cutout_along_plane(w_total, plane='y', value=cutout_line)
+#cutout_line = (deflection.b)/2
+#deflection.plot_cutout_along_plane(w_total, plane='y', value=cutout_line)
+
 # uncomment to check individual modes of the displacement response
-deflection.plot_individual_modes(w_mn_arr, t)
+deflection.plot_individual_modes(w_mn, t)
+
+"""
+# testing old parameters again for debugging purposes
+a = 1.0  # length of the membrane in x-direction (m)
+b = 1.0  # length of the membrane in y-direction (m)
+T = 1.0  # tension (N/m)
+mu = 0.01  # area mass density (kg/m^2)
+eta = 0.1  # damping coefficient (Pa/(m/s))
+modes = 10  # number of modes to consider
+t_max = 10.0  # simulation time (s)
+dt = 0.01  # time step (s)
+# dt = 1 #commented out for debugging
+p0 = 1.0  # pressure amplitude
+"""

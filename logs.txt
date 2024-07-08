@@ -5,12 +5,14 @@ high priority:
 -   plotting just individual modes still weird (plot_individual_modes)
 - fix color bars for membrane response
     - eventually to keep the color scale the same just find max and mins and pass it in as key value pairs
-- brief synopsis (high level)
 - finish as much as possible about final report draft about what sims can do once done debugging
     - share w adam and tom
 - start thinking about poster presentation
-- refactor code into multiple files
+- refactor code into multiple modules
 - update abstract, turn in final draft
+- wmn as 3d array 
+- test cases: we know the response should look like a damped harmonic oscillator
+- most citations in model
 
 lower priority:
 - brief synopsis (high level)
