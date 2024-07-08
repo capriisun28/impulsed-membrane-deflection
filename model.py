@@ -3,22 +3,6 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.fft import dst, idst
 
-"""
-# parameters
-a = 0.005  # length of the membrane in x-direction (m)
-b = 0.005  # length of the membrane in y-direction (m)
-h = 5e-8 # membrane thickness
-rho = 2850 # mass density (kg/m^3)
-sigma = 250e6 # in plane pressure (MPa)
-T = h * sigma  # tension (N/m)
-mu = rho * h  # area mass density (kg/m^2)
-eta = 0  # damping coefficient (Pa/(m/s))
-modes = 10 # number of modes to consider    # prob try a lot more modes
-t_max = 1e-5  # simulation time (s)
-dt = 1e-6  # time step (s)
-p0 = 1.0  # pressure amplitude # should i adjust this later?
-"""
-
 class membrane_response:
     def __init__(self, impulse_times, dt=1e-6, t_max=1e-5, a=0.005, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, alpha=0.1, eta=0):
         self.impulse_times = impulse_times
@@ -41,8 +25,6 @@ class membrane_response:
         self.X, self.Y = np.meshgrid(self.x, self.y) #check later, mgrid instead?
 
 
-
-
     # eigenfns
     def phi_mn(self, m, n):
         return (2 / np.sqrt(self.a * self.b)) * np.sin(m * np.pi * self.x / self.a) * np.sin(n * np.pi * self.y / self.b)
@@ -58,14 +40,11 @@ class membrane_response:
 
 
     # looping through timesteps
-    """
-    notes to self, probably store true initial conditions in wmn init init or smth, and then set wminit = wm initially then propagate that 
-    """
+    
     def calculate_response(self):
         t = np.arange(0, self.t_max, self.dt)
-        w_total = np.zeros((len(t), self.X.shape[0], self.X.shape[1])) #check this, p sure should be right :D. representing it as a 3d array
+        w_total = np.zeros((len(t), self.X.shape[0], self.X.shape[1]))
         w_mn = np.zeros((len(t), self.num_modes, self.num_modes))
-        #w_mn_arr = np.zeros((self.num_modes, self.num_modes)) #this array is just to make it easy to plot/check response of individual modes
         last_impulse_index = 0
         A = 1.0 
         B = 1.0
@@ -73,7 +52,8 @@ class membrane_response:
         for t_index in range(len(t)):
             #print(t_index)
             current_time = t[t_index]
-            #print(current_time) #debugging: so it's not properly picking up the impulse at time 0
+            #print(current_time) #debugging: this is making sure it enters the loop
+            print(last_impulse_index) #debugging: this is seeing if it even find the next impulses
 
             #w = np.zeros_like(self.X)
             for m in range(1, self.num_modes + 1):
@@ -86,8 +66,10 @@ class membrane_response:
                     #print(omega_star/2*np.pi)
 
                 # checking if current time against next impulse
+                    #debugging that last_imp_index isn't being picked up: first if condition, when commented out, still outputs 0
                     if (last_impulse_index != 0 & last_impulse_index + 1 < len(self.impulse_times)) and \
                         current_time >= self.impulse_times[last_impulse_index + 1]:
+                        print("hello i am the debugger :D")
 
                         # shift time reference
                         t_shifted = self.impulse_times[last_impulse_index + 1] - self.impulse_times[last_impulse_index]
@@ -109,9 +91,7 @@ class membrane_response:
 
                     # calculating wmn at the current time with reference to the last impulse
                     t_shifted = current_time - self.impulse_times[last_impulse_index]
-                    # i agree that wmn should be an array instead of what i was doing before. 
                     w_mn[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
-                    # w_mn_arr[m - 1, n - 1] = w_mn[m * n][1] 
                     w_total[t_index] = w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
 
         return t, w_total, w_mn
@@ -238,7 +218,7 @@ impulse_times = [0,1,2,3]
 deflection = membrane_response(impulse_times)
 t, w_total, w_mn = deflection.calculate_response()
 
-print(t)
+print(t) #debugging
 
 # plotting the results  #the plots take a bit to run
 # this plot should be the main membrane response
@@ -269,4 +249,20 @@ t_max = 10.0  # simulation time (s)
 dt = 0.01  # time step (s)
 # dt = 1 #commented out for debugging
 p0 = 1.0  # pressure amplitude
+"""
+
+"""
+# parameters (most are inputted as default parameters for an instant of the membrane response class)
+a = 0.005  # length of the membrane in x-direction (m)
+b = 0.005  # length of the membrane in y-direction (m)
+h = 5e-8 # membrane thickness
+rho = 2850 # mass density (kg/m^3)
+sigma = 250e6 # in plane pressure (MPa)
+T = h * sigma  # tension (N/m)
+mu = rho * h  # area mass density (kg/m^2)
+eta = 0  # damping coefficient (Pa/(m/s))
+modes = 10 # number of modes to consider    # prob try a lot more modes
+t_max = 1e-5  # simulation time (s)
+dt = 1e-6  # time step (s)
+p0 = 1.0  # pressure amplitude # should i adjust this later?
 """
