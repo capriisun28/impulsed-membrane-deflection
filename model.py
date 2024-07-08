@@ -52,7 +52,7 @@ class membrane_response:
         for t_index in range(len(t)):
             #print(t_index)
             current_time = t[t_index]
-            #print(current_time) #debugging: this is making sure it enters the loop
+            print(current_time) #debugging: this is making sure it enters the loop
             print(last_impulse_index) #debugging: this is seeing if it even find the next impulses
 
             #w = np.zeros_like(self.X)
@@ -67,7 +67,7 @@ class membrane_response:
 
                 # checking if current time against next impulse
                     #debugging that last_imp_index isn't being picked up: first if condition, when commented out, still outputs 0
-                    if (last_impulse_index != 0 & last_impulse_index + 1 < len(self.impulse_times)) and \
+                    if (last_impulse_index != 0 or last_impulse_index + 1 < len(self.impulse_times)) and \
                         current_time >= self.impulse_times[last_impulse_index + 1]:
                         print("hello i am the debugger :D")
 
@@ -214,11 +214,11 @@ class membrane_response:
 
 
 # calling membrane response
-impulse_times = [0,1,2,3]
+impulse_times = [0,1e-6,2e-6,3e-6]
 deflection = membrane_response(impulse_times)
 t, w_total, w_mn = deflection.calculate_response()
 
-print(t) #debugging
+#print(t) #debugging
 
 # plotting the results  #the plots take a bit to run
 # this plot should be the main membrane response
