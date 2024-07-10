@@ -100,59 +100,12 @@ class membrane_response:
                     w_total[t_index] = w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
 
         return t, w_total, w_mn
-    """
-    # initial conditions
-    wmn = np.zeros((modes, modes))
-    wmn_dot = np.zeros((modes, modes))
-    #wmn[0, 0] = 1  # testing testing!! just the phi_1_1 mode
 
-    # time array
-    t = np.arange(0, t_max, dt)
-    impulse_times = [0]
-    # impulse_times = [0.2, 0.3, 1, 1.1]
-    # impulse_times = [1, 3, 4, 7, 9] commented out for debugging
-
-    # array to store displacement
-    w_total = np.zeros((len(t), 100, 100))
-
-    # spatial grid
-    x = np.linspace(0, a, 100)
-    y = np.linspace(0, b, 100)
-    X, Y = np.meshgrid(x, y) #check later, mgrid instead?
-
-
-    ti = 0
-    while ti in range(len(t)):
-        w = np.zeros_like(X)
-        for m in range(1, modes + 1):
-            for n in range(1, modes + 1):
-                k = eigvals(m, n, a, b)
-                omega0_mn = np.sqrt(T * k**2 / mu)
-                alpha = eta / (2 * mu)
-                #print(alpha) 
-                omega_star = np.sqrt(omega0_mn**2 - alpha**2)
-                #print(omega_star/2*np.pi)
-                
-                # free oscillation solution
-                A = wmn[m-1, n-1]
-                B = (wmn_dot[m-1, n-1] + alpha * A) / omega_star
-                wmn[m-1, n-1] = np.exp(-alpha * t[ti]) * (A * np.cos(omega_star * t[ti]) + B * np.sin(omega_star * t[ti]))
-                
-                # impulse handling (for example impulse at ti=1s)
-                if t[ti] in impulse_times:
-                    wmn_dot[m-1, n-1] += p0 * p_smn(m, n, 0, a, 0, b, a, b) / mu
-                
-                w += wmn[m-1, n-1] * phi_mn(X, Y, m, n, a, b)
-        
-        w_total[ti] = w
-        ti += 1
-        """
-    
     
     def plot_displacement(self, w_total, t):
         plt.figure(figsize=(10, 6))
         for ti in range(0, len(t), int(len(t)/(10))): # adjust later, have the factor that len(t) is divided by depend on time steps
-            plt.contourf(self.X, self.Y, w_total[ti], levels=20, cmap='magma')
+            plt.contourf(self.x, self.y, w_total[ti], levels=20, cmap='magma')
             plt.colorbar(label = 'Displacement')
             plt.title(f'Membrane Displacement Response at Time = {t[ti]:.2f} s')
             plt.xlabel('x')
@@ -161,10 +114,9 @@ class membrane_response:
             plt.show()
 
 
-
     # plotting the avg displacement as a function of time
     def plot_avg_displacement_vs_time(self, w_total, t):
-        avg_displacement = np.mean(w_total, axis=(1, 2)) # this is because w_total is an array [# time steps, # x's, # y's]
+        avg_displacement = np.mean(w_total, axis=(1, 2))
         plt.plot(t, avg_displacement)
         plt.xlabel('Time')
         plt.ylabel('Average Displacement (w)')
@@ -192,7 +144,7 @@ class membrane_response:
         if plane == 'y':
             idx = (np.abs(self.y - value)).argmin()
             for ti in range(len(t)):
-                plt.plot(self.x, w_total[ti, idx, :], label=f'Time = {t[ti]:.2f}s')
+                plt.plot(self.x, w_total[ti, idx, :], label=f'Time = {t[ti]:.2f}s') # fix label
             plt.xlabel('Distance along membrane (x)')
         elif plane == 'x':
             idx = (np.abs(self.x - value)).argmin()
@@ -207,10 +159,10 @@ class membrane_response:
     
 
     # plot individual modes over time (just w_1_1)
-    def plot_individual_modes(self, w_mn, t):
+    def plot_individual_modes(self, w_mn, t, m, n):
         time_plot_arr = range(0, len(t), int(len(t)/(self.t_max/self.dt)))
         plt.figure()
-        plt.plot(t, w_mn[time_plot_arr, 7, 5], label='w_1_1') #m,n and n,m plot the same
+        plt.plot(t, w_mn[time_plot_arr, m - 1, n - 1], label=f'w_{m}_{n}') #m,n and n,m plot the same
         plt.xlabel('Time')
         plt.ylabel('Displacement')
         plt.title('Individual Modes Over Time')
@@ -224,11 +176,9 @@ impulse_times = [0,1e-6,2e-6]
 deflection = membrane_response(impulse_times)
 t, w_total, w_mn = deflection.calculate_response()
 
-#print(t) #debugging
-
 # plotting the results  #the plots take a bit to run
 # this plot should be the main membrane response
-deflection.plot_displacement(w_total, t)
+#deflection.plot_displacement(w_total, t)
 
 # calls the plotting fn for displacement v time
 # commented out for now as this runs really slowly
@@ -242,7 +192,7 @@ cutout_line = (deflection.b)/2
 deflection.plot_cutout_along_plane(w_total, plane='y', value=cutout_line)
 
 # uncomment to check individual modes of the displacement response
-deflection.plot_individual_modes(w_mn, t)
+deflection.plot_individual_modes(w_mn, t, 7, 5)
 
 """
 # testing old parameters again for debugging purposes
