@@ -36,16 +36,17 @@ class membrane_response:
         return (a / (m * np.pi)) * (np.cos(m * np.pi * x0 / a) - np.cos(m * np.pi * x1 / a)) * \
             (b / (n * np.pi)) * (np.cos(n * np.pi * y0 / b) - np.cos(n * np.pi * y1 / b))
 
-
     # looping through timesteps
-    
     def calculate_response(self):
         t = np.arange(0, self.t_max, self.dt)
         w_total = np.zeros((len(t), self.X.shape[0], self.X.shape[1]))
         w_mn = np.zeros((len(t), self.num_modes, self.num_modes))
+        w_mn_dot = np.zeros((len(t), self.num_modes, self.num_modes))
         curr_impulse_index = 0
         A = 0.0 
         B = 0.0
+        wmn_init = 0
+        wmn_dot_init = 0
 
         for t_index in range(len(t)):
             #print(t_index)
@@ -54,7 +55,6 @@ class membrane_response:
             print('impulse index: ', curr_impulse_index) #debugging: this is seeing if it even find the next impulses
             print('curr impulse time: ', self.impulse_times[curr_impulse_index]) #debugging: debugging out of range error
 
-            #w = np.zeros_like(self.X)
             for m in range(1, self.num_modes + 1):
                 for n in range(1, self.num_modes + 1):
                     k = self.eigvals(m, n, self.a, self.b)
@@ -64,22 +64,19 @@ class membrane_response:
                     #print(omega_star/2*np.pi)
 
                     # checking if current time against next impulse
-                    if (curr_impulse_index == 0):
+                    if (curr_impulse_index == 0 and current_time >= self.impulse_times[0]):
                         A = 0
                         wmn_dot_init = self.p0 * pS_mn / self.mu
                         B = wmn_dot_init / omega_star
-                        t_shifted = current_time
-                        
-                        if (current_time >= self.impulse_times[0]):
-                            t_shifted = current_time - self.impulse_times[0]
 
                     #debugging that last_imp_index isn't being picked up: first if condition, when commented out, still outputs 
-                    if (curr_impulse_index + 1 < len(self.impulse_times) and \
+                    if (curr_impulse_index + 1 < len(self.impulse_times) & \
                     (current_time >= self.impulse_times[curr_impulse_index + 1])):
                         #print("hello i am the debugger :D")
                         
                         # shift time reference
-                        t_shifted = self.impulse_times[curr_impulse_index + 1] - self.impulse_times[curr_impulse_index - 1]
+                        t_shifted = self.impulse_times[curr_impulse_index + 1] - self.impulse_times[curr_impulse_index]
+                        print("t_shifted in if: ", t_shifted)
 
                         # calculate initial conditions for wmn and wmn_dot at the time of the current impulse
                         wmn_init = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
@@ -99,13 +96,17 @@ class membrane_response:
                         #debugging w_mn plots not changing even when w_mn changes:
                         #print(A, B)
                         # calculating wmn at the current time with reference to the last impulse
+                    if current_time < self.impulse_times[0]:
+                        t_shifted = current_time
+                    else:
                         t_shifted = current_time - self.impulse_times[curr_impulse_index]
                     
                     print("t_shifted: ", t_shifted, "|| curr time: ", current_time, "|| curr impulse time: ", self.impulse_times[curr_impulse_index], "|| curr impulse index: ", curr_impulse_index)
                     w_mn[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
+                    w_mn_dot[t_index, m - 1, n - 1] = wmn_dot_init
                     w_total[t_index] = w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
 
-        return t, w_total, w_mn
+        return t, w_total, w_mn, w_mn_dot
 
     
     def plot_displacement(self, w_total, t):
@@ -176,16 +177,27 @@ class membrane_response:
         plt.savefig('individual_modes_over_time.png', format="png")
         plt.show()
 
+    def plot_velocity_over_time(self, w_mn_dot, t):
+        time_plot_arr = range(0, len(t))
+        plt.figure()
+        plt.plot(t, w_mn_dot[time_plot_arr, 7, 5], label='velocity') 
+        plt.xlabel('Time')
+        plt.ylabel('Velocity')
+        plt.title('Velocity Over Time')
+        plt.legend()
+        plt.savefig('velocity_over_time.png', format="png")
+        plt.show()
+
 
 # calling membrane response
-impulse_times = [0, 1e-6, 2e-6, 3e-6]
-deflection = membrane_response(impulse_times, dt=1e-8)
-#print("hi!")
-#impulse_times = [0.3, 1, 2]
-#deflection = membrane_response(impulse_times, dt=0.25, t_max=2.2)
-t, w_total, w_mn = deflection.calculate_response()
+#impulse_times = [0, 1e-6, 2e-6, 3e-6]
+#deflection = membrane_response(impulse_times, dt=1e-8)
+print("hi!")
+impulse_times = [0.5, 1, 2]
+deflection = membrane_response(impulse_times, dt=0.5, t_max=2.51)
+t, w_total, w_mn, w_mn_dot = deflection.calculate_response()
 
-print(w_mn)
+#print(w_mn)
 
 # plotting the results  #the plots take a bit to run
 # this plot should be the main membrane response
@@ -196,14 +208,15 @@ print(w_mn)
 #deflection.plot_displacement_vs_time(w_total, t)
 
 # calls the plotting fn for avg displacement v time
-deflection.plot_avg_displacement_vs_time(w_total, t)
+#deflection.plot_avg_displacement_vs_time(w_total, t)
 
 # calls the plotting fn for cutout of the response
-cutout_line = (deflection.b)/2
-deflection.plot_cutout_along_plane(w_total, plane='y', value=cutout_line)
+#cutout_line = (deflection.b)/2
+#deflection.plot_cutout_along_plane(w_total, plane='y', value=cutout_line)
 
 # uncomment to check individual modes of the displacement response
 deflection.plot_individual_modes(w_mn, t, 7, 5)
+deflection.plot_velocity_over_time(w_mn_dot, t)
 
 """
 # testing old parameters again for debugging purposes
