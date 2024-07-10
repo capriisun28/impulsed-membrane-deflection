@@ -4,13 +4,13 @@ from scipy.integrate import solve_ivp
 from scipy.fft import dst, idst
 
 class membrane_response:
-    def __init__(self, impulse_times, dt=1e-6, t_max=1e-5, a=0.005, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, alpha=0.1, eta=0):
+    def __init__(self, impulse_times, dt=1e-7, t_max=1e-5, a=0.005, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, alpha=0.1, eta=20):
         self.impulse_times = impulse_times
         self.dt = dt
         self.t_max = t_max
         self.a = a
         self.b = b
-        self.h = h # something that is still confusing to me is that we are treating this and plotting it like a 2D membrane, but we also give it a height so as to define tension as such?
+        self.h = h
         self.rho = rho # mass density (kg/m^3)
         self.sigma = sigma # in plane pressure (MPa)
         self.tension = self.h * self.sigma # tension (N/m)
@@ -151,18 +151,19 @@ class membrane_response:
     
     def plot_displacement(self, w_total, t):
         plt.figure(figsize=(10, 6))
-        for ti in range(len(t)): # adjust later, have the factor that len(t) is divided by depend on time steps
-            plt.contourf(self.X, self.Y, w_total[ti], cmap='magma')
-            plt.colorbar()
+        for ti in range(0, len(t), int(len(t)/(10))): # adjust later, have the factor that len(t) is divided by depend on time steps
+            plt.contourf(self.X, self.Y, w_total[ti], levels=20, cmap='magma')
+            plt.colorbar(label = 'Displacement')
+            plt.title(f'Membrane Displacement Response at Time = {t[ti]:.2f} s')
             plt.xlabel('x')
             plt.ylabel('y')
-            plt.title(f'Displacement at t = {t[ti]:.2f} s')
             plt.savefig(f'displacement_{ti}.png', format="png")
             plt.show()
 
 
+
     # plotting the avg displacement as a function of time
-    def plot_avg_displacement_vs_time(w_total, t):
+    def plot_avg_displacement_vs_time(self, w_total, t):
         avg_displacement = np.mean(w_total, axis=(1, 2)) # this is because w_total is an array [# time steps, # x's, # y's]
         plt.plot(t, avg_displacement)
         plt.xlabel('Time')
@@ -171,12 +172,12 @@ class membrane_response:
         plt.savefig(f'avg_displacement_v_time.png', format="png")
         plt.show()
 
-    # plotting the displacement as a function of time
-    def plot_displacement_vs_time(self, w, t):
+    # plotting the displacement as a function of time #this runs really slow rn
+    def plot_displacement_vs_time(self, w_total, t):
         plt.figure()
-        for i in range(len(self.x)):
-            for j in range(len(self.y)):
-                plt.plot(t, w[i, j, :], label=f'Point ({self.x[i]:.2f}, {self.y[j]:.2f})')
+        for i in range(0, len(self.x)):
+            for j in range(0, len(self.y)):
+                plt.plot(t, w_total[:, i, j], label=f'Point ({self.x[i]:.2f}, {self.y[j]:.2f})')
         plt.xlabel('Time (s)')
         plt.ylabel('Displacement')
         plt.title('Displacement vs Time')
@@ -207,9 +208,9 @@ class membrane_response:
 
     # plot individual modes over time (just w_1_1)
     def plot_individual_modes(self, w_mn, t):
-        time_plot_arr = range(0, len(t), int(len(t)/10))
+        time_plot_arr = range(0, len(t), int(len(t)/(self.t_max/self.dt)))
         plt.figure()
-        plt.plot(t, w_mn[time_plot_arr, 8, 9], label='w_1_1') #m,n and n,m plot the same
+        plt.plot(t, w_mn[time_plot_arr, 7, 5], label='w_1_1') #m,n and n,m plot the same
         plt.xlabel('Time')
         plt.ylabel('Displacement')
         plt.title('Individual Modes Over Time')
@@ -227,17 +228,18 @@ t, w_total, w_mn = deflection.calculate_response()
 
 # plotting the results  #the plots take a bit to run
 # this plot should be the main membrane response
-#deflection.plot_displacement(w_total, t)
+deflection.plot_displacement(w_total, t)
 
 # calls the plotting fn for displacement v time
+# commented out for now as this runs really slowly
 #deflection.plot_displacement_vs_time(w_total, t)
 
 # calls the plotting fn for avg displacement v time
-#deflection.plot_avg_displacement_vs_time(w_total, t)
+deflection.plot_avg_displacement_vs_time(w_total, t)
 
 # calls the plotting fn for cutout of the response
-#cutout_line = (deflection.b)/2
-#deflection.plot_cutout_along_plane(w_total, plane='y', value=cutout_line)
+cutout_line = (deflection.b)/2
+deflection.plot_cutout_along_plane(w_total, plane='y', value=cutout_line)
 
 # uncomment to check individual modes of the displacement response
 deflection.plot_individual_modes(w_mn, t)
