@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 # from scipy.fft import dst, idst
 
 class membrane_response:
-    def __init__(self, impulse_times, dt=1e-8, t_max=1e-5, a=0.005, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, eta=20):
+    def __init__(self, impulse_times, dt=1e-8, t_max=1e-5, a=0.005, b=0.005, modes=10, h=5e-2, rho=2850, sigma=250e6, eta=20):
         self.impulse_times = impulse_times
         self.dt = dt
         self.t_max = t_max
@@ -75,7 +75,7 @@ class membrane_response:
                     #debugging that last_imp_index isn't being picked up: first if condition, when commented out, still outputs 
                     if (curr_impulse_index + 1 < len(self.impulse_times) and \
                         (current_time >= self.impulse_times[curr_impulse_index + 1])):
-                    
+                        
                         # shift time reference
                         t_shifted = self.impulse_times[curr_impulse_index + 1] - self.impulse_times[curr_impulse_index]
                         #print("hello i am the debugger :D!!", " t_shifted in if: ", t_shifted)
@@ -87,7 +87,7 @@ class membrane_response:
                                                                                 A * self.alpha * np.cos(omega_star * t_shifted) - \
                                                                                 B * self.alpha * np.sin(omega_star * t_shifted))
                         
-                        print("hello i am the debugger :D!!", " t_shifted in if: ", t_shifted, "wmn init: ", wmn_init, "wmn dot minus: ", wmn_dot_init_minus)
+                        print("hello i am the debugger :D", "| t_shifted in if: ", t_shifted, "| wmn init: ", wmn_init, "| wmn dot minus: ", wmn_dot_init_minus)
                         # applying the velocity jump condition
                         wmn_dot_init = wmn_dot_init_minus + self.p0 * pS_mn / self.mu
 
@@ -103,7 +103,7 @@ class membrane_response:
                     else:
                         t_shifted = current_time - self.impulse_times[curr_impulse_index]
                     
-                    print("t_shifted: ", t_shifted, "|| curr time: ", current_time, "|| curr impulse time: ", self.impulse_times[curr_impulse_index], "|| curr impulse ind: ", curr_impulse_index, "|| m: ", m, "|| n :", n, "|| A: ", A, "|| B: ", B)
+                    print("t_shifted: ", t_shifted, "|| curr t: ", current_time, "|| curr imp t: ", self.impulse_times[curr_impulse_index], "|| curr imp ind: ", curr_impulse_index, "|| m: ", m, "|| n :", n, "|| A: ", A, "|| B: ", B)
                     w_mn[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
                     w_mn_dot[t_index, m - 1, n - 1] = wmn_dot_init
                     w_total[t_index] = w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
