@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 # from scipy.fft import dst, idst
 
 class membrane_response:
-    def __init__(self, impulse_times, dt=1e-8, t_max=1e-5, a=0.005, b=0.005, modes=10, h=5e-2, rho=2850, sigma=250e6, eta=20):
+    def __init__(self, impulse_times, dt=1e-8, t_max=1e-5, a=0.005, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, eta=10):
         self.impulse_times = impulse_times
         self.dt = dt
         self.t_max = t_max
@@ -42,6 +42,7 @@ class membrane_response:
         w_total = np.zeros((len(t), self.X.shape[0], self.X.shape[1]))
         w_mn = np.zeros((len(t), self.num_modes, self.num_modes))
         w_mn_dot = np.zeros((len(t), self.num_modes, self.num_modes))
+        w_mn_dot_minus = np.zeros((len(t), self.num_modes, self.num_modes))
         curr_impulse_index = 0
         A = 0.0 
         B = 0.0
@@ -105,10 +106,14 @@ class membrane_response:
                     
                     print("t_shifted: ", t_shifted, "|| curr t: ", current_time, "|| curr imp t: ", self.impulse_times[curr_impulse_index], "|| curr imp ind: ", curr_impulse_index, "|| m: ", m, "|| n :", n, "|| A: ", A, "|| B: ", B)
                     w_mn[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
-                    w_mn_dot[t_index, m - 1, n - 1] = wmn_dot_init
+                    w_mn_dot_minus[t_index, m - 1, n - 1] = wmn_dot_init
+                    w_mn_dot[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (B * omega_star * np.cos(omega_star * t_shifted) - \
+                                                                                A * omega_star * np.sin(omega_star * t_shifted) - \
+                                                                                A * self.alpha * np.cos(omega_star * t_shifted) - \
+                                                                                B * self.alpha * np.sin(omega_star * t_shifted))
                     w_total[t_index] = w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
 
-        return t, w_total, w_mn, w_mn_dot
+        return t, w_total, w_mn, w_mn_dot_minus, w_mn_dot
 
     
     def plot_displacement(self, w_total, t):
@@ -170,8 +175,9 @@ class membrane_response:
     # plot individual modes over time (just w_1_1)
     def plot_individual_modes(self, w_mn, t, m, n):
         time_plot_arr = range(0, len(t))
-        plt.figure()
+        plt.figure(figsize=(11, 7))
         plt.plot(t, w_mn[time_plot_arr, m - 1, n - 1], label=f'w_{m}_{n}') #m,n and n,m plot the same
+        plt.xticks(np.arange(0, max(t)+self.dt, self.dt/2)) # sorry this is kinda cursed if your dt is tiny .. ill fix it i promise
         plt.xlabel('Time')
         plt.ylabel('Displacement')
         plt.title('Individual Modes Over Time')
@@ -179,25 +185,43 @@ class membrane_response:
         plt.savefig('individual_modes_over_time.png', format="png")
         plt.show()
 
-    def plot_velocity_over_time(self, w_mn_dot, t):
+    def plot_velocity_imparted_over_time(self, w_mn_dot_minus, t):
         time_plot_arr = range(0, len(t))
-        plt.figure()
-        plt.plot(t, w_mn_dot[time_plot_arr, 7, 5], label='velocity') 
+        plt.figure(figsize=(11, 7))
+        plt.scatter(t, w_mn_dot_minus[time_plot_arr, 7, 5], label='velocity') 
+        plt.xticks(np.arange(0, max(t)+self.dt, self.dt/2))
         plt.xlabel('Time')
         plt.ylabel('Velocity')
-        plt.title('Velocity Over Time')
+        plt.title('Velocity After Imparted Impulse')
+        plt.legend()
+        plt.savefig('velocity_over_time.png', format="png")
+        plt.show()
+
+    def plot_velocity_over_time(self, w_mn_dot, t):
+        time_plot_arr = range(0, len(t))
+        plt.figure(figsize=(11, 7))
+        plt.plot(t, w_mn_dot[time_plot_arr, 7, 5], label='velocity') 
+        plt.xticks(np.arange(0, max(t)+self.dt, self.dt/2))
+        plt.xlabel('Time')
+        plt.ylabel('Velocity')
+        plt.title('Velocity vs Time')
         plt.legend()
         plt.savefig('velocity_over_time.png', format="png")
         plt.show()
 
 
 # calling membrane response
-#impulse_times = [0, 1e-6, 2e-6, 3e-6]
-#deflection = membrane_response(impulse_times, dt=1e-8)
-print("hi!")
-impulse_times = [0.6, 1, 2]
-deflection = membrane_response(impulse_times, dt=0.5, t_max=2.51)
-t, w_total, w_mn, w_mn_dot = deflection.calculate_response()
+print("hi!") #easy flag to scroll to the start
+
+# test case 1 (ideal parameters, velocity vs time graph looks weird, continuity on displacement graph also looks odd)
+# impulse_times = [0, 1e-6, 2e-6, 3e-6]
+# deflection = membrane_response(impulse_times, dt=1e-8)
+
+# test case 2 (woah :OOO dt = 0.01 looks real cool. 
+#             but dt = 0.1 is easier to see the behavior of, and that's what I've been using to debug)
+impulse_times = [0.3, 0.5, 1, 1.2, 2]
+deflection = membrane_response(impulse_times, dt=0.2, t_max=2.51, h=5e-4, eta=2)
+t, w_total, w_mn, w_mn_dot_minus, w_mn_dot = deflection.calculate_response()
 
 #print(w_mn)
 
@@ -218,6 +242,7 @@ t, w_total, w_mn, w_mn_dot = deflection.calculate_response()
 
 # uncomment to check individual modes of the displacement response
 deflection.plot_individual_modes(w_mn, t, 7, 5)
+deflection.plot_velocity_imparted_over_time(w_mn_dot_minus, t)
 deflection.plot_velocity_over_time(w_mn_dot, t)
 
 """
