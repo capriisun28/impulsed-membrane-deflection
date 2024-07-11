@@ -45,35 +45,40 @@ class membrane_response:
         curr_impulse_index = 0
         A = 0.0 
         B = 0.0
+        
         wmn_init = 0
         wmn_dot_init = 0
 
-        for t_index in range(len(t)):
-            #print(t_index)
-            current_time = t[t_index]
-            
-            for m in range(1, self.num_modes + 1):
-                for n in range(1, self.num_modes + 1):
-                    k = self.eigvals(m, n, self.a, self.b)
-                    pS_mn = self.p_smn(m, n, 0, self.a, 0, self.b, self.a, self.b)
-                    omega0_mn = np.sqrt(self.tension * k**2 / self.mu)
-                    omega_star = np.sqrt(omega0_mn**2 - self.alpha**2)
-                    #print(omega_star/2*np.pi)
+        for m in range(1, self.num_modes + 1):
+            for n in range(1, self.num_modes + 1):
 
+                k = self.eigvals(m, n, self.a, self.b)
+                pS_mn = self.p_smn(m, n, 0, self.a, 0, self.b, self.a, self.b)
+                omega0_mn = np.sqrt(self.tension * k**2 / self.mu)
+                omega_star = np.sqrt(omega0_mn**2 - self.alpha**2)
+                #print(omega_star/2*np.pi)
+                enter = True
+                curr_impulse_index = 0
+
+                for t_index in range(len(t)):
+                    #print(t_index)
+                    current_time = t[t_index]
+            
                     # checking if current time against next impulse
-                    if (curr_impulse_index == 0 and current_time >= self.impulse_times[0]):
+                    if (enter) and (curr_impulse_index == 0 and current_time >= self.impulse_times[0]):
+                        enter = False
                         wmn_dot_init = self.p0 * pS_mn / self.mu
                         B = wmn_dot_init / omega_star
+                        print("knock knock, A: ", A, ", B: ", B)
                         
                     #debugging that last_imp_index isn't being picked up: first if condition, when commented out, still outputs 
                     if (curr_impulse_index + 1 < len(self.impulse_times) and \
                         (current_time >= self.impulse_times[curr_impulse_index + 1])):
-                        print("hello i am the debugger :D")
-                        
+                    
                         # shift time reference
                         t_shifted = self.impulse_times[curr_impulse_index + 1] - self.impulse_times[curr_impulse_index]
-                        print("t_shifted in if: ", t_shifted)
-
+                        print("hello i am the debugger :D!!", " t_shifted in if: ", t_shifted)
+                        
                         # calculate initial conditions for wmn and wmn_dot at the time of the current impulse
                         wmn_init = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
                         wmn_dot_init_minus = np.exp(-self.alpha * t_shifted) * (B * omega_star * np.cos(omega_star * t_shifted) - \
@@ -96,7 +101,7 @@ class membrane_response:
                     else:
                         t_shifted = current_time - self.impulse_times[curr_impulse_index]
                     
-                    print("t_shifted: ", t_shifted, "|| curr time: ", current_time, "|| curr impulse time: ", self.impulse_times[curr_impulse_index], "|| curr impulse ind: ", curr_impulse_index, "|| m: ", m, "||n :", n, "|| A: ", A, "|| B: ", B)
+                    print("t_shifted: ", t_shifted, "|| curr time: ", current_time, "|| curr impulse time: ", self.impulse_times[curr_impulse_index], "|| curr impulse ind: ", curr_impulse_index, "|| m: ", m, "|| n :", n, "|| A: ", A, "|| B: ", B)
                     w_mn[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
                     w_mn_dot[t_index, m - 1, n - 1] = wmn_dot_init
                     w_total[t_index] = w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
