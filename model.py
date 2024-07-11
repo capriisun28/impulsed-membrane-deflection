@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 # from scipy.fft import dst, idst
 
 class membrane_response:
-    def __init__(self, impulse_times, dt=1e-8, t_max=1e-5, a=0.005, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, eta=10):
+    def __init__(self, impulse_times, dt=1e-8, t_max=1e-5, a=0.005, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, eta=0.5):
         self.impulse_times = impulse_times
         self.dt = dt
         self.t_max = t_max
@@ -18,7 +18,7 @@ class membrane_response:
         self.mu = self.rho * self.h  # area mass density (kg/m^2)
         self.num_modes = modes
         self.alpha = self.eta / (2 * self.mu)
-        self.p0 = 1.0  # pressure amplitude, should i adjust this later?
+        self.p0 = 1.0  # pressure amplitude, can adjust later if wanting to specify strength of force
         self.x = np.linspace(0, a, 100)
         self.y = np.linspace(0, b, 100)
         self.X, self.Y = np.meshgrid(self.x, self.y) 
@@ -43,16 +43,12 @@ class membrane_response:
         w_mn = np.zeros((len(t), self.num_modes, self.num_modes))
         w_mn_dot = np.zeros((len(t), self.num_modes, self.num_modes))
         w_mn_dot_minus = np.zeros((len(t), self.num_modes, self.num_modes))
-        curr_impulse_index = 0
-        A = 0.0 
-        B = 0.0
-        
         wmn_init = 0
         wmn_dot_init = 0
-
+        
         for m in range(1, self.num_modes + 1):
             for n in range(1, self.num_modes + 1):
-                print("------------------------------------------")
+                print("-----------------------------------------------------------------------")
 
                 k = self.eigvals(m, n, self.a, self.b)
                 pS_mn = self.p_smn(m, n, 0, self.a, 0, self.b, self.a, self.b)
@@ -60,6 +56,8 @@ class membrane_response:
                 omega_star = np.sqrt(omega0_mn**2 - self.alpha**2)
                 #print(omega_star/2*np.pi)
                 enter = True
+                A = 0.0 
+                B = 0.0
                 curr_impulse_index = 0
 
                 for t_index in range(len(t)):
@@ -79,7 +77,6 @@ class membrane_response:
                         
                         # shift time reference
                         t_shifted = self.impulse_times[curr_impulse_index + 1] - self.impulse_times[curr_impulse_index]
-                        #print("hello i am the debugger :D!!", " t_shifted in if: ", t_shifted)
                         
                         # calculate initial conditions for wmn and wmn_dot at the time of the current impulse
                         wmn_init = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
@@ -104,14 +101,16 @@ class membrane_response:
                     else:
                         t_shifted = current_time - self.impulse_times[curr_impulse_index]
                     
-                    print("t_shifted: ", t_shifted, "|| curr t: ", current_time, "|| curr imp t: ", self.impulse_times[curr_impulse_index], "|| curr imp ind: ", curr_impulse_index, "|| m: ", m, "|| n :", n, "|| A: ", A, "|| B: ", B)
+                    
                     w_mn[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
+                    #these two are for plotting
                     w_mn_dot_minus[t_index, m - 1, n - 1] = wmn_dot_init
                     w_mn_dot[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (B * omega_star * np.cos(omega_star * t_shifted) - \
                                                                                 A * omega_star * np.sin(omega_star * t_shifted) - \
                                                                                 A * self.alpha * np.cos(omega_star * t_shifted) - \
                                                                                 B * self.alpha * np.sin(omega_star * t_shifted))
                     w_total[t_index] = w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
+                    print("t_shifted: ", t_shifted, "|| curr t: ", current_time, "|| curr imp t: ", self.impulse_times[curr_impulse_index], "|| curr imp ind: ", curr_impulse_index, " || m: ", m, "|| n :", n, "|| A: ", A, "|| B: ", B)
 
         return t, w_total, w_mn, w_mn_dot_minus, w_mn_dot
 
@@ -190,6 +189,7 @@ class membrane_response:
         plt.figure(figsize=(11, 7))
         plt.scatter(t, w_mn_dot_minus[time_plot_arr, 7, 5], label='velocity') 
         plt.xticks(np.arange(0, max(t)+self.dt, self.dt/2))
+        #plt.yticks(np.arange(0,1e-30, 1e-32))
         plt.xlabel('Time')
         plt.ylabel('Velocity')
         plt.title('Velocity After Imparted Impulse')
@@ -202,6 +202,7 @@ class membrane_response:
         plt.figure(figsize=(11, 7))
         plt.plot(t, w_mn_dot[time_plot_arr, 7, 5], label='velocity') 
         plt.xticks(np.arange(0, max(t)+self.dt, self.dt/2))
+        #plt.yticks(np.arange(0,1e-8, 1e-11))
         plt.xlabel('Time')
         plt.ylabel('Velocity')
         plt.title('Velocity vs Time')
@@ -219,8 +220,8 @@ print("hi!") #easy flag to scroll to the start
 
 # test case 2 (woah :OOO dt = 0.01 looks real cool. 
 #             but dt = 0.1 is easier to see the behavior of, and that's what I've been using to debug)
-impulse_times = [0.3, 0.5, 1, 1.2, 2]
-deflection = membrane_response(impulse_times, dt=0.2, t_max=2.51, h=5e-4, eta=2)
+impulse_times = [0.6, 1, 2]
+deflection = membrane_response(impulse_times, dt=0.5, t_max=2.51, h=5e-4, eta=2)
 t, w_total, w_mn, w_mn_dot_minus, w_mn_dot = deflection.calculate_response()
 
 #print(w_mn)
@@ -241,7 +242,7 @@ t, w_total, w_mn, w_mn_dot_minus, w_mn_dot = deflection.calculate_response()
 #deflection.plot_cutout_along_plane(w_total, plane='y', value=cutout_line)
 
 # uncomment to check individual modes of the displacement response
-deflection.plot_individual_modes(w_mn, t, 7, 5)
+deflection.plot_individual_modes(w_mn, t, 9, 9)
 deflection.plot_velocity_imparted_over_time(w_mn_dot_minus, t)
 deflection.plot_velocity_over_time(w_mn_dot, t)
 
