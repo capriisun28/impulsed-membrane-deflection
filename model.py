@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 # from scipy.fft import dst, idst
 
 class membrane_response:
-    def __init__(self, impulse_times, dt=1e-8, t_max=1e-5, a=0.005, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, eta=0.5):
+    def __init__(self, impulse_times, dt=1e-8, t_max=1e-5, a=0.008, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, eta=0.5):
         self.impulse_times = impulse_times
         self.dt = dt
         self.t_max = t_max
@@ -25,7 +25,7 @@ class membrane_response:
 
     # eigenfns
     def phi_mn(self, m, n):
-        return (2 / np.sqrt(self.a * self.b)) * np.sin(m * np.pi * self.x / self.a) * np.sin(n * np.pi * self.y / self.b)
+        return (2 / np.sqrt(self.a * self.b)) * np.sin(m * np.pi * self.X / self.a) * np.sin(n * np.pi * self.Y / self.b)
 
     # eigenvalues
     def eigvals(self, m, n, a, b):
@@ -34,7 +34,7 @@ class membrane_response:
     #  pressure spatial mode coefficients
     def p_smn(self, m, n, x0, x1, y0, y1, a, b):
         return (a / (m * np.pi)) * (np.cos(m * np.pi * x0 / a) - np.cos(m * np.pi * x1 / a)) * \
-            (b / (n * np.pi)) * (np.cos(n * np.pi * y0 / b) - np.cos(n * np.pi * y1 / b))
+               (b / (n * np.pi)) * (np.cos(n * np.pi * y0 / b) - np.cos(n * np.pi * y1 / b))
 
     # looping through timesteps
     def calculate_response(self):
@@ -45,13 +45,13 @@ class membrane_response:
         w_mn_dot_minus = np.zeros((len(t), self.num_modes, self.num_modes))
         wmn_init = 0
         wmn_dot_init = 0
-        
+
         for m in range(1, self.num_modes + 1):
             for n in range(1, self.num_modes + 1):
                 print("-----------------------------------------------------------------------")
 
                 k = self.eigvals(m, n, self.a, self.b)
-                pS_mn = self.p_smn(m, n, 0, self.a, 0, self.b, self.a, self.b)
+                pS_mn = self.p_smn(m, n, (self.a / 3), (2 * self.a / 3), (self.b/3), (2 * self.b / 3), self.a, self.b)
                 omega0_mn = np.sqrt(self.tension * k**2 / self.mu)
                 omega_star = np.sqrt(omega0_mn**2 - self.alpha**2)
                 #print(omega_star/2*np.pi)
@@ -69,7 +69,7 @@ class membrane_response:
                         enter = False
                         wmn_dot_init = self.p0 * pS_mn / self.mu
                         B = wmn_dot_init / omega_star
-                        print("knock knock, A: ", A, ", B: ", B)
+                        print("knock knock, A: ", A, ", B: ", B, ", wmn_dot_init: ", wmn_dot_init)
                         
                     #debugging that last_imp_index isn't being picked up: first if condition, when commented out, still outputs 
                     if (curr_impulse_index + 1 < len(self.impulse_times) and \
@@ -109,7 +109,7 @@ class membrane_response:
                                                                                 A * omega_star * np.sin(omega_star * t_shifted) - \
                                                                                 A * self.alpha * np.cos(omega_star * t_shifted) - \
                                                                                 B * self.alpha * np.sin(omega_star * t_shifted))
-                    w_total[t_index] = w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
+                    w_total[t_index] += w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
                     print("t_shifted: ", t_shifted, "|| curr t: ", current_time, "|| curr imp t: ", self.impulse_times[curr_impulse_index], "|| curr imp ind: ", curr_impulse_index, " || m: ", m, "|| n :", n, "|| A: ", A, "|| B: ", B)
 
         return t, w_total, w_mn, w_mn_dot_minus, w_mn_dot
@@ -117,7 +117,7 @@ class membrane_response:
     
     def plot_displacement(self, w_total, t):
         plt.figure(figsize=(10, 6))
-        for ti in range(0, len(t), int(len(t)/(10))): # adjust later, have the factor that len(t) is divided by depend on time steps
+        for ti in range(0, len(t), int(len(t)/100)): # adjust later, have the factor that len(t) is divided by depend on time steps
             plt.contourf(self.x, self.y, w_total[ti], levels=20, cmap='magma')
             plt.colorbar(label = 'Displacement')
             plt.title(f'Membrane Displacement Response at Time = {t[ti]:.2f} s')
@@ -215,20 +215,20 @@ class membrane_response:
 print("hi!") #easy flag to scroll to the start
 
 # test case 1 (ideal parameters, velocity vs time graph looks weird, continuity on displacement graph also looks odd)
-# impulse_times = [0, 1e-6, 2e-6, 3e-6]
-# deflection = membrane_response(impulse_times, dt=1e-8)
+impulse_times = [0, 1e-6, 2e-6, 3e-6]
+deflection = membrane_response(impulse_times, dt=1e-7)
 
 # test case 2 (woah :OOO dt = 0.01 looks real cool. 
 #             but dt = 0.1 is easier to see the behavior of, and that's what I've been using to debug)
-impulse_times = [0.6, 1, 2]
-deflection = membrane_response(impulse_times, dt=0.5, t_max=2.51, h=5e-4, eta=2)
+#impulse_times = [0.6, 1, 2]
+#deflection = membrane_response(impulse_times, dt=0.5, t_max=2.51, h=5e-4, eta=2)
 t, w_total, w_mn, w_mn_dot_minus, w_mn_dot = deflection.calculate_response()
 
 #print(w_mn)
 
 # plotting the results  #the plots take a bit to run
 # this plot should be the main membrane response
-#deflection.plot_displacement(w_total, t)
+deflection.plot_displacement(w_total, t)
 
 # calls the plotting fn for displacement v time
 # commented out for now as this runs really slowly
@@ -242,9 +242,9 @@ t, w_total, w_mn, w_mn_dot_minus, w_mn_dot = deflection.calculate_response()
 #deflection.plot_cutout_along_plane(w_total, plane='y', value=cutout_line)
 
 # uncomment to check individual modes of the displacement response
-deflection.plot_individual_modes(w_mn, t, 9, 9)
-deflection.plot_velocity_imparted_over_time(w_mn_dot_minus, t)
-deflection.plot_velocity_over_time(w_mn_dot, t)
+deflection.plot_individual_modes(w_mn, t, 9, 7)
+#deflection.plot_velocity_imparted_over_time(w_mn_dot_minus, t)
+#deflection.plot_velocity_over_time(w_mn_dot, t)
 
 """
 # testing old parameters again for debugging purposes
