@@ -39,7 +39,7 @@ Where the logic and the actual dynamic forward modelling is implemented, wrt. to
 
 All functions are found in model/scripts/plots.py.
 
-Plots of interest can be found in: model/output_plots/*relevant impulse folder*
+Plots of interest can be found in: model/output_plots/{relevant impulse folder}
 
 Gifs can be found in:
 - model/output_plots/{relevant impulse folder}/2d-displacement-plots 
