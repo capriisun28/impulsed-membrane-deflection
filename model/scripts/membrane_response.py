@@ -119,6 +119,6 @@ class membrane_response:
                                                                                 A * self.alpha * np.cos(omega_star * t_shifted) - \
                                                                                 B * self.alpha * np.sin(omega_star * t_shifted))
                     w_total[t_index] += w_mn[t_index, m - 1, n - 1] * self.phi_mn(m, n)
-                    print("t_shifted: ", t_shifted, "|| curr t: ", current_time, "|| curr imp t: ", self.impulse_times[curr_impulse_index], "|| curr imp ind: ", curr_impulse_index, " || m: ", m, "|| n :", n, "|| A: ", A, "|| B: ", B, "|| w:", w_total[t_index, m, n])
+                    print("t_shifted: ", t_shifted, "|| curr t: ", current_time, "|| curr imp t: ", self.impulse_times[curr_impulse_index], "|| curr imp ind: ", curr_impulse_index, " || m: ", m, "|| n :", n, "|| A: ", A, "|| B: ", B, "|| w:", w_total[t_index, m - 1, n - 1])
 
         return t, w_total, w_mn, w_mn_dot_minus, w_mn_dot, self.x, self.y, self.X, self.Y, self.a, self.b, Q, omega_resonant

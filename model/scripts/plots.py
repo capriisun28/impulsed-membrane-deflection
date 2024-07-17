@@ -106,6 +106,16 @@ class plotting:
         cbar_min_val = w_total.min()
         if abs(cbar_min_val) > cbar_max_val:
             cbar_max_val = abs(cbar_min_val)
+
+        global_min = np.inf
+        global_max = -np.inf
+        for ti in range(len(t)):
+            if plane == 'y':
+                data = w_total[ti, idx, :]
+            elif plane == 'x':
+                data = w_total[ti, :, idx]
+            global_min = min(global_min, data.min())
+            global_max = max(global_max, data.max())
         
         for ti in range(0, len(t), max(1, int(len(t) / 100))):  # adjust factor depending on the number of time steps
             fig = plt.figure(figsize=(10, 6))
@@ -118,6 +128,7 @@ class plotting:
                 plt.xlabel('Distance along membrane (y)')
             
             plt.ylabel('Displacement (w)')
+            plt.ylim(global_min, global_max)
             plt.title(f'Displacement along {plane}={value} at Time = {t[ti]:.2e}s')
             plt.legend()
             plt.savefig(checkpath(cutout=True) + f'displacement_{plane}_{value}_timestep_{ti:03d}.png', format="png")
@@ -166,7 +177,7 @@ class plotting:
         plt.title("Q")
         plt.xlabel("mode #")
         plt.ylabel("mode #")
-        plt.savefig(checkpath() + "Q Contour Map Plotting", format='png')
+        plt.savefig(checkpath() + "q_contour_map_plotting.png", format='png')
         plt.show()
 
     def plot_omega_res(omega):
@@ -179,5 +190,5 @@ class plotting:
         plt.title("Resonant Frequency")
         plt.xlabel("mode #")
         plt.ylabel("mode #")
-        plt.savefig(checkpath() + "Resonant Freq Contour Map Plotting", format='png')
+        plt.savefig(checkpath() + "resonant_freq_contour_map_plotting.png", format='png')
         plt.show()

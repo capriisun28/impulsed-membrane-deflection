@@ -1,0 +1,88 @@
+A NOTE ON DEBUGGING MODE PROFILE TEMPORAL BEHAVIOR
+Adam W. Behnke  2024-07-10
+
+* Worked with commit 5985153
+
+I noticed a few things in model.py that were likely causing issues. I
+corrected things where I could (in model_adam_debug.py), but there are 
+still some issues remaining with the logic that handles impulses (the first 
+isn't being handled at all).
+
+The changes I made, and their results:
+
+--------------------------------------------------------------------
+1. Lines 7 and 17: Commented out  
+
+17 was supurfluous, since alpha is later calcualted from eta and 
+mu. Needed to remove key=val argument in line 7 as well.
+
+Carolyn: 
+Fixed!
+--------------------------------------------------------------------
+
+--------------------------------------------------------------------
+2. Line 176: Added dt=1e-8 argument to membrane_response()
+
+Done to get a finer resolution on the plot. Change 3 accompanies 
+this. Made some problematic jumps more visible.
+
+Carolyn: 
+Thanks! I'd been fiddling around with the key vals in the
+function parameters and totally forgot I could feed it a default value..
+--------------------------------------------------------------------
+
+--------------------------------------------------------------------
+3. Line 163 (in plot_individual_modes()): Changed to simply
+   time_plot_arr = range(0, len(t))
+
+It looks like you figured out the issue here, but  you may have 
+done more work than is needed to fix it. The third option of 
+range() is optional, I believe. So it'll just generate the integer 
+list you need for use in w_mn[] without the third argument.
+
+Carolyn: 
+Thanks for catching that!
+--------------------------------------------------------------------
+
+--------------------------------------------------------------------
+4. Line 72: Changed the check to "last_impulse_index + 1"
+
+Looking at the plot, there are clearly issues with the 
+impulses: the values should be continuous, with only jumps in the 
+slope (velocity), but there are clearly jumps in the value of 
+w_1_1 as well. Also, with three impulses in the list, only two 
+are visible in the plot.
+
+The intent of last_impulse_index is to hold onto the index of the 
+impulse most recently handled. So you need to check in the impulse 
+AFTER that has arrived.
+
+Once this is done, the first impulse handled appears to be handled 
+correctly; only the slope jumps, not the position. But, 
+
+ - The first impulse in the list is still ignored, and
+ - the last impulse handled gives a jump in the value of w_1_1, 
+   signalling an issue.
+
+Before this change, I think the last impulse in the list was 
+being missed; after the change, it may be that the first one 
+is being missed.
+
+Carolyn: 
+(using line numbers from the most recent model.py commit)
+
+Most recent changes: 
+- 
+--------------------------------------------------------------------
+
+So: There are still issues with how the impulses are being handled exactly. 
+It may be helpful to look at the logic, and work out the logic on paper for 
+a super-simple test case, to see why one at the beginning (or formerly end) 
+is being ignored. You may need a boolean flag, or some way to signal that 
+whether or not there has yet been an impulse.
+
+* I also commented out some print statements in lines 55-57, to let it run 
+a little faster and cleaner in the terminal.
+
+-Adam
+

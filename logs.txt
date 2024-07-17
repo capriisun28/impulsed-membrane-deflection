@@ -1,23 +1,26 @@
 current agenda items:
-
-high priority:
-- start bringing in other plots (2D membrane deflection, avg displacement etc)
-- fix color bars for membrane response
-    - eventually to keep the color scale the same just find max and mins and pass it in as key value pairs
-- start thinking about poster presentation
-- refactor code into multiple modules
-- turn in final draft
-- plot finer time steps for wmn response, perhaps check more impulse times, also perhaps plot more modes?
-- test cases: we know the response should look like a damped harmonic oscillator
-- compute Q for each resonance as well
-
-lower priority:
-- brief synopsis (high level)
-- make slides with plots (don't forget slide numbers!, nice words, etc)
-- for displacement against cutout fix key so displaying times correctly
-
+- more rigorous input for p0 amplitude coefficient
+- rework "results and verifications" with info about what parts of my sims will be used for future Webb group experiments
+- make main time loop inside membrane-response a function
+- displacement vs time plots still take way too long to run, legends are gross (same with the cutout lines)
+- make script, flash cards? for poster talk
+- have option to save to svg or pdf if parameters latex = true or ppt = true
+- send webb 100 modes side by side for impulse times as shown in slides
+- send webb 100 modes side by side for impulse times at 0, more spread out impulse times
+- clean up comments throughout code so it just reads better!
 
 things that have been done:
+- for code: to implement damping condition, resonant freq, pulse the same spot diff modes diff resonant frequencies
+- velocity plots are fine now
+- make slides for tomorrow
+- compute Q for each resonance
+- bugs that still exist: 
+    - running the displacement plots for adam's animation file vs main.py in the model directory produces diff responses, \
+    trying to figure out why that is
+    - figured it out! i was still doing multiple impulse times so the first impulse didn't look as "bright" because subsequent \
+    pulses would kick up the displacement higher, vs the most displaced it gets is at the beginning w only one impulse
+- refactor code into multiple modules
+- checked that the inner/outer loop switch still superimposes correctly
 - final abstract submitted!!! hoorayyyy
 - individual modes plots look ok
 - thoughts: should i be looping thru modes first, or thru time first? // both are fine
