@@ -21,20 +21,20 @@ class membrane_response:
         self.y = np.linspace(0, b, 100)
         self.X, self.Y = np.meshgrid(self.x, self.y) 
 
-    # eigenfns
+    ### eigenfns
     def phi_mn(self, m, n):
         return (2 / np.sqrt(self.a * self.b)) * np.sin(m * np.pi * self.X / self.a) * np.sin(n * np.pi * self.Y / self.b)
 
-    # eigenvalues
+    ### eigenvalues
     def eigvals(self, m, n, a, b):
         return np.sqrt((m * np.pi / a)**2 + (n * np.pi / b)**2)
 
-    #  pressure spatial mode coefficients
+    ###  pressure spatial mode coefficients
     def p_smn(self, m, n, x0, x1, y0, y1, a, b):
         return (a / (m * np.pi)) * (np.cos(m * np.pi * x0 / a) - np.cos(m * np.pi * x1 / a)) * \
                (b / (n * np.pi)) * (np.cos(n * np.pi * y0 / b) - np.cos(n * np.pi * y1 / b))
 
-    # looping through timesteps
+    ### looping through timesteps
     def calculate_response(self):
 
         t = np.arange(0, self.t_max, self.dt)
@@ -73,46 +73,43 @@ class membrane_response:
                     #print(t_index)
                     current_time = t[t_index]
             
-                    # checking if current time against next impulse
+                    ### checking current time against first impulse time
                     if (enter) and (curr_impulse_index == 0 and current_time >= self.impulse_times[0]):
                         enter = False
                         wmn_dot_init = self.p0 * pS_mn / self.mu
                         B = wmn_dot_init / omega_star
                         print("knock knock, A: ", A, ", B: ", B, ", wmn_dot_init: ", wmn_dot_init)
                         
-                    #debugging that last_imp_index isn't being picked up: first if condition, when commented out, still outputs 
+                    ### checking current time against subsequent impulse times
                     if (curr_impulse_index + 1 < len(self.impulse_times) and \
                         (current_time >= self.impulse_times[curr_impulse_index + 1])):
                         
-                        # shift time reference
+                        ### shift time reference
                         t_shifted = self.impulse_times[curr_impulse_index + 1] - self.impulse_times[curr_impulse_index]
                         
-                        # calculate initial conditions for wmn and wmn_dot at the time of the current impulse
+                        ### calculate initial conditions for wmn and wmn_dot at the time of the current impulse
                         wmn_init = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
                         wmn_dot_init_minus = np.exp(-self.alpha * t_shifted) * (B * omega_star * np.cos(omega_star * t_shifted) - \
                                                                                 A * omega_star * np.sin(omega_star * t_shifted) - \
                                                                                 A * self.alpha * np.cos(omega_star * t_shifted) - \
                                                                                 B * self.alpha * np.sin(omega_star * t_shifted))
-                        
+                        ### terminal output, comment out if you don't want to clog up the terminal
                         print("hello i am the debugger :D", "| t_shifted in if: ", t_shifted, "| wmn init: ", wmn_init, "| wmn dot minus: ", wmn_dot_init_minus)
-                        # applying the velocity jump condition
+                        ### applying the velocity jump condition
                         wmn_dot_init = wmn_dot_init_minus + self.p0 * pS_mn / self.mu
 
-                        # updating A and B, impulse index
+                        ### updating A and B, impulse index
                         A = wmn_init
                         B = (wmn_dot_init + self.alpha * wmn_init) / omega_star
                         curr_impulse_index += 1
 
-                        #debugging w_mn plots not changing even when w_mn changes:
-                        # calculating wmn at the current time with reference to the last impulse
                     if current_time < self.impulse_times[0]:
                         t_shifted = current_time
                     else:
                         t_shifted = current_time - self.impulse_times[curr_impulse_index]
-                    
-                    
+                
                     w_mn[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (A * np.cos(omega_star * t_shifted) + B * np.sin(omega_star * t_shifted))
-                    #these two are for plotting
+                    ### these two arrays are for plotting
                     w_mn_dot_minus[t_index, m - 1, n - 1] = wmn_dot_init
                     w_mn_dot[t_index, m - 1, n - 1] = np.exp(-self.alpha * t_shifted) * (B * omega_star * np.cos(omega_star * t_shifted) - \
                                                                                 A * omega_star * np.sin(omega_star * t_shifted) - \

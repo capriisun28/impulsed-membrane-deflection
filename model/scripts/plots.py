@@ -38,10 +38,10 @@ class plotting:
             # It appears that imshow might be a better fit for this. The "vmin" and "vmax" kwargs let you set colorbar limits
             # The "extent" specifies the axis tick label ranges
             plt.imshow(w_total[ti], cmap='magma', interpolation='nearest', extent=[0,a,0,b], vmin=-cbar_max_val, vmax=cbar_max_val)
-            plt.colorbar(label = 'Displacement')
+            plt.colorbar(label = 'Displacement (m)')
             plt.title(f'Membrane Displacement Response at Time = {t[ti]:.2e} s') # Changed format specification to scientific notation
-            plt.xlabel('x')
-            plt.ylabel('y')
+            plt.xlabel('x (m)')
+            plt.ylabel('y (m)')
             plt.savefig(checkpath(displacement=True) + f'displacement_{ti:03d}.png', format="png") # Changed format specification to have leading zeroes so ImageMagick plays nice with it
             #plt.show()
             plt.close(fig)
@@ -77,13 +77,13 @@ class plotting:
             idx = (np.abs(y - value)).argmin()
             for ti in range(len(t)):
                 plt.plot(x, w_total[ti, idx, :], label=f'Time = {t[ti]:.2f}s') # fix label
-            plt.xlabel('Distance along membrane (x)')
+            plt.xlabel('Distance along membrane (x) (m)')
         elif plane == 'x':
             idx = (np.abs(x - value)).argmin()
             for ti in range(len(t)):
                 plt.plot(y, w_total[ti, :, idx], label=f'Time = {t[ti]:.2f}s')
-            plt.xlabel('Distance along membrane (y)')
-        plt.ylabel('Displacement (w)')
+            plt.xlabel('Distance along membrane (y) (m)')
+        plt.ylabel('Displacement (w) (m)')
         plt.title(f'Displacement along {plane}={value}')
         plt.legend()
         plt.savefig(checkpath() + f'displacement_{plane}_{value}_cutout_{ti}.png', format="png")
@@ -94,7 +94,6 @@ class plotting:
         """
 
     def plot_cutout_along_plane_at_timesteps(t, x, y, w_total, plane='y', value=0.5):
-    # Determine the index along the specified plane at which the cutout is to be plotted
         if plane == 'y':
             idx = (np.abs(y - value)).argmin()
         elif plane == 'x':
@@ -185,6 +184,7 @@ class plotting:
         plt.figure(figsize=(8, 6))
         X, Y = np.meshgrid(range(omega.shape[1]), range(omega.shape[0]))
         cp = plt.contourf(X, Y, omega, cmap='magma')
+        ### uncommenting out the belowline plots a heatmap as opposed to a contour map
         #plt.imshow(Q[1:,1:], cmap='magma', origin='lower', aspect='auto')
         plt.colorbar(cp, label='Resonant Frequency Value')
         plt.title("Resonant Frequency")
