@@ -39,6 +39,9 @@ Where the logic and the actual dynamic forward modelling is implemented, wrt. to
 
 All functions are found in model/scripts/plots.py.
 
+Plots of interest can be found in model/output_plots/{relevant impulse folder}
+Gifs can be found in model/output_plots/{relevant impulse folder}/2d-displacement-plots and model/output_plots/{relevant impulse folder}/displacement-cutout-plots
+
 **plot_displacement**: 
 Shows a 2d overview of the membrane and its displacement response at each time step. These time steps pieced together comprise the gif animations shown in the group meeting, and are found in gif folders for various p0 initial conditions.
 
