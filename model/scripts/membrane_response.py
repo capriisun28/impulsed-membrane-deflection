@@ -58,6 +58,8 @@ class membrane_response:
                     break
 
                 pS_mn = self.p_smn(m, n, ((self.a / 2) - (self.a / 20)), ((self.a / 2) + (self.a / 20)), ((self.b / 2) - (self.a / 20)), ((self.b / 2) + (self.a / 20)), self.a, self.b)
+                ### offcentered incident force
+                #pS_mn = self.p_smn(m, n, ((self.a / 3) - (self.a / 20)), ((self.a / 3) + (self.a / 20)), ((self.b / 3) - (self.a / 20)), ((self.b / 3) + (self.a / 20)), self.a, self.b)
                 omega0_mn = np.sqrt(self.tension * k**2 / self.mu)
                 omega_star = np.sqrt(omega0_mn**2 - self.alpha**2)
                 Q[m, n] = omega0_mn / (2 * self.alpha)

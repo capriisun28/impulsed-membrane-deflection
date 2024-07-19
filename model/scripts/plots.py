@@ -46,16 +46,29 @@ class plotting:
             #plt.show()
             plt.close(fig)
 
+    def plot_point_deflection_vs_time(w_total, t, x, y, a, b):
+        #convert (x, y) coordinates to indices
+        x_idx = int((x / a) * (w_total.shape[1] - 1))
+        y_idx = int((y / b) * (w_total.shape[2] - 1))
+        deflection_at_point = w_total[:, x_idx, y_idx]
+        plt.figure()
+        plt.plot(t, deflection_at_point, label=f'Point ({x:.3e}, {y:.3e})')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Deflection (m)')
+        plt.title(f'Deflection vs Time at Point ({x}, {y})')
+        plt.legend()
+        plt.savefig(checkpath() + f'deflection_point_{x}_{y}_vs_time.png', format="png")
+        plt.show()
     
     def plot_displacement_vs_time(w_total, t, x, y):
         plt.figure()
         for i in range(0, len(x)):
             for j in range(0, len(y)):
-                plt.plot(t, w_total[:, i, j], label=f'Point ({x[i]:.2f}, {y[j]:.2f})')
+                plt.plot(t, w_total[:, i, j], label=f'Point ({x[i]:.3e}, {y[j]:.3e})')
         plt.xlabel('Time (s)')
         plt.ylabel('Displacement at Center (m)')
         plt.title('Displacement vs Time at Center of Membrane')
-        plt.legend()
+        #plt.legend()
         plt.savefig(checkpath() + 'displacement_vs_time.png', format="png")
         plt.show()
 
@@ -85,7 +98,7 @@ class plotting:
             plt.xlabel('Distance along membrane (y) (m)')
         plt.ylabel('Displacement (w) (m)')
         plt.title(f'Displacement along {plane}={value}')
-        plt.legend()
+        #plt.legend()
         plt.savefig(checkpath() + f'displacement_{plane}_{value}_cutout_{ti}.png', format="png")
         plt.show()
         """    
@@ -120,16 +133,16 @@ class plotting:
             fig = plt.figure(figsize=(10, 6))
             
             if plane == 'y':
-                plt.plot(x, w_total[ti, idx, :], label=f'Time = {t[ti]:.2e}s')
-                plt.xlabel('Distance along membrane (x)')
+                plt.plot(x, w_total[ti, idx, :], label=f'Time = {t[ti]:.3e}s')
+                plt.xlabel('Distance along membrane (x) (m)')
             elif plane == 'x':
-                plt.plot(y, w_total[ti, :, idx], label=f'Time = {t[ti]:.2e}s')
-                plt.xlabel('Distance along membrane (y)')
+                plt.plot(y, w_total[ti, :, idx], label=f'Time = {t[ti]:.3e}s')
+                plt.xlabel('Distance along membrane (y) (m)')
             
-            plt.ylabel('Displacement (w)')
+            plt.ylabel('Displacement (w) (m)')
             plt.ylim(global_min, global_max)
             plt.title(f'Displacement along {plane}={value} at Time = {t[ti]:.2e}s')
-            plt.legend()
+            #plt.legend()
             plt.savefig(checkpath(cutout=True) + f'displacement_{plane}_{value}_timestep_{ti:03d}.png', format="png")
             #plt.show()
             plt.close(fig)
