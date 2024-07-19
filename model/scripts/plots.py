@@ -152,31 +152,31 @@ class plotting:
         plt.plot(t, w_mn[:, m - 1, n - 1])
         plt.xlabel('Time (s)')
         plt.ylabel(f'Mode {m},{n} Displacement')
-        plt.title(f'Displacement of Mode ({m + 1},{n + 1}) vs Time')
+        plt.title(f'Displacement of Mode ({m},{n}) vs Time')
         plt.legend()
-        plt.savefig(checkpath() + f'individual_mode_{m + 1}_{n + 1}_over_time.png', format="png")
+        plt.savefig(checkpath() + f'individual_mode_{m}_{n}_over_time.png', format="png")
         plt.show()
 
     
     def plot_velocity_imparted_over_time(w_mn_dot_minus, t, m, n):
         plt.figure()
-        plt.plot(t, w_mn_dot_minus[:, m, n])
+        plt.plot(t, w_mn_dot_minus[:, m - 1, n - 1])
         plt.xlabel('Time (s)')
         plt.ylabel('Velocity Imparted (m/s)')
-        plt.title(f'Velocity Imparted Over Time for Mode ({m + 1}, {n + 1})')
+        plt.title(f'Velocity Imparted Over Time for Mode ({m}, {n})')
         plt.legend()
-        plt.savefig(checkpath() + f'velocity_mode_{m + 1}_{n + 1}_imparted_over_time.png', format="png")
+        plt.savefig(checkpath() + f'velocity_mode_{m}_{n}_imparted_over_time.png', format="png")
         plt.show()
 
     
     def plot_velocity_of_mode_over_time(w_mn_dot,t, m, n):
         plt.figure()
         #plt.plot(t, w_mn_dot[:, 1, 1])
-        plt.plot(t, w_mn_dot[:, m, n])
+        plt.plot(t, w_mn_dot[:, m - 1, n - 1])
         plt.xlabel('Time (s)')
         plt.ylabel('Velocity (m/s)')
-        plt.title(f'Velocity Over Time for Mode ({m + 1}, {n + 1})')
-        plt.savefig(checkpath() + f'velocity_for_mode_{m + 1}_{n + 1}_over_time.png', format="png")
+        plt.title(f'Velocity Over Time for Mode ({m}, {n})')
+        plt.savefig(checkpath() + f'velocity_for_mode_{m}_{n}_over_time.png', format="png")
         plt.show()
 
     def plot_Q(Q):
