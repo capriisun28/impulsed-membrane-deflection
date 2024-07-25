@@ -1,0 +1,97 @@
+NOTE ON HOW IMPULSES ARE HANDLED
+Adam W. Behnke  2024-06-28
+
+In the code's current state, I don't think the process of updating the time
+behavior after an impulse is being handled correctly.
+
+Note that in the "Membrane Impulse Response: Time Domain" document 
+(23 May 2024, Version 2), Eqs. (4.8), (4.11), and (4.12) are all solved at 
+t = 0; NOT some arbitrary time t_0. As mentioned in the last paragraph of
+Section 4, to use these expressions you need to "shift" your time reference so
+your new "t = 0" is at the time of the most recent impulse; i.e., for after
+impulse i, your new t' = t - t_i.
+
+I've attempted some pseudocode below between the lines of asterisks that I
+think would handle this properly. It only focuses on the temporal aspect of a
+single mode; i.e., it doesn't iterate over modes. Also it uses "while"
+sometimes just to get the logic accross; this may or may not be the best way
+to actually implement it.
+
+If I did all this right, it should also remove the requirement that 
+impulses fall on timesteps.
+
+********************************************************************
+
+last_impulse_index = 0
+impulse_times = [1, 2, 3]
+dt = 0.1 # Time increment
+t_max = 10 # max time
+t = np.arange(0, t_max, dt) # array of times
+t_index = 0 # Integer index for the array of times
+
+# Loop over all times
+
+while ( t[t_index] < t_max )
+
+  .
+  .  (Ignoring how to start the loop before the first impulse; 
+  .  this is an edge case you'll need to handle)
+  .
+  
+  # Check if current time is at or past the next impulse
+  if ( t[t_index] >= impluse_times[last_impulse_index + 1] )     
+
+    # Find wmn and wmn_dot at the time of the current impulse being
+    # handled
+    
+    t_shifted = impulse_times[last_impulse_index + 1] - \
+                impulse_times[last_impulse_index]
+    
+    wmn_init = exp(-alpha * t_shifted) * (A * cos(omega_star * \
+               t_shifted) + B * sin(omega_star * t_shifted)) # Eq. (4.2)
+    
+    wmn_dot_init_minus = ... (Use Eq. (4.9), but with t_shifted)
+    
+    # Find new A and B from the values of wmn and wmn_dot at the 
+    # time of the current impulse
+    
+    A = wmn_init
+    
+    wmn_dot_init = wmn_dot_init_minus + p0 * p^S_mn / mu # Eq. (6.4)
+    
+    B = (alpha * wmn_init + wmn_dot_init) / omega_star
+    
+    # Update which pulse was the most recent
+    last_pulse_index += 1
+  
+  # Continue looping over time
+  # 
+  # Find value of wmn at current time, using time referenced to the
+  # most recent impulse
+  
+  t_shifted = t[t_index] - impulse_times[last_impulse_index]
+  
+  wmn[t_index] = exp(-alpha * t_shifted) * (A * cos(omega_star * \
+                 t_shifted) + B * sin(omega_star * t_shifted)) # Eq. (4.2)
+  
+  # Increment the time
+  t_index += 1
+
+********************************************************************
+
+This approach using shifted time references is admittedly a little 
+convoluted. You could instead do the math to come up with expressions
+analogous to Eqs. (4.8) and (4.11), but at times other than t = 0. 
+Then t = 0 would be your time reference for all the math.
+
+Part of the reason this wasn't done was because of the exponential 
+decay. If you keep t = 0 as your reference for finding coefficients 
+A and B, they'd need to blow up as time went on to compensate for 
+the rapidly decaying exponential factor out front, potentially 
+eventually running into numerical precision issues.
+
+Let me know if this makes sense, and if there are any questions or 
+issues.
+
+-Adam
+
