@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 class membrane_response:
-    def __init__(self, impulse_times, dt=1e-8, t_max=1e-5, a=0.008, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, eta=0.5):
+    def __init__(self, impulse_times, dt=1e-8, t_max=1e-5, a=0.008, b=0.005, modes=10, h=5e-8, rho=2850, sigma=250e6, eta=0.5, p0=3.336e-8):
         self.impulse_times = impulse_times
         self.dt = dt
         self.t_max = t_max
@@ -16,7 +16,7 @@ class membrane_response:
         self.mu = self.rho * self.h  # area mass density (kg/m^2)
         self.num_modes = modes
         self.alpha = self.eta / (2 * self.mu)
-        self.p0 = 3.336e-8  #value provided by Adam #N-s/(m^2) # pressure amplitude, can adjust later if wanting to specify strength of force
+        self.p0 = p0  #value provided by Adam #N-s/(m^2) # pressure amplitude, can adjust later if wanting to specify strength of force
         self.x = np.linspace(0, a, 100)
         self.y = np.linspace(0, b, 100)
         self.X, self.Y = np.meshgrid(self.x, self.y) 
@@ -57,15 +57,15 @@ class membrane_response:
                     print("This response is overdamped or critically damped. The model currently accounts only for the underdamped case.")
                     break
 
-                pS_mn = self.p_smn(m, n, ((self.a / 2) - (self.a / 20)), ((self.a / 2) + (self.a / 20)), ((self.b / 2) - (self.a / 20)), ((self.b / 2) + (self.a / 20)), self.a, self.b)
+                #pS_mn = self.p_smn(m, n, ((self.a / 2) - (self.a / 20)), ((self.a / 2) + (self.a / 20)), ((self.b / 2) - (self.a / 20)), ((self.b / 2) + (self.a / 20)), self.a, self.b)
                 ### offcentered incident force
-                #pS_mn = self.p_smn(m, n, ((self.a / 3) - (self.a / 20)), ((self.a / 3) + (self.a / 20)), ((self.b / 3) - (self.a / 20)), ((self.b / 3) + (self.a / 20)), self.a, self.b)
+                pS_mn = self.p_smn(m, n, ((self.a / 3) - (self.a / 20)), ((self.a / 3) + (self.a / 20)), ((2*self.b / 3) - (self.a / 20)), ((2* self.b / 3) + (self.a / 20)), self.a, self.b)
                 omega0_mn = np.sqrt(self.tension * k**2 / self.mu)
                 omega_star = np.sqrt(omega0_mn**2 - self.alpha**2)
                 Q[m, n] = omega0_mn / (2 * self.alpha)
                 omega_resonant[m, n] = math.sqrt((omega0_mn**2) - ((self.eta**2)/(2 * (self.mu**2))))
                 #print("alpha: ", omega_star/2*np.pi, "|| omega0: ",omega0_mn, "|| omega*: ", omega_star)
-                #print("Q: ", Q[m,n], "resonant frequency: ", omega_resonant[m,n])
+                print("Q: ", Q[m,n], "resonant frequency: ", omega_resonant[m,n])
                 enter = True
                 A = 0.0 
                 B = 0.0

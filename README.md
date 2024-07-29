@@ -1,10 +1,6 @@
 # Impulsed Membrane Response
 *A Purdue SURF 2024 project*
 
-README added by Adam; probably good to have this here. 
-
-Carolyn: Thanks Adam!
-
 ## Notes from Carolyn:
 
 ### Motivation:
@@ -48,6 +44,9 @@ Gifs can be found in:
 **plot_displacement**: 
 Shows a 2d overview of the membrane and its displacement response at each time step. These time steps pieced together comprise the gif animations shown in the group meeting, and are found in gif folders for various p0 initial conditions.
 
+**plot_point_deflection_vs_time**:
+Plots the displacement response of any specified point on the membrane as a function of time; currently plotting the deflection at the center of the membrane with default width = 0.008m and length = 0.005m.
+
 **plot_displacement_vs_time**: 
 Plotting just the magnitude of the displacement as a function of time. Currently takes an abysmal amount of time to run, and the legend is quite gross, but this shall be remedied.
 
@@ -61,7 +60,10 @@ Picking a cutout line that runs across the membrane, and plotting the displaceme
 Same as above, but plotted at each time steps also comprises the gifs shown in the meeting.
 
 **plot_individual_modes**: 
-Plotting the individual modes of the displacement response. In this case, only w_1_1 is being plotted as a sanity check.
+Plotting the individual modes of the displacement response. 
+
+**plot_individual_modes_for_poster**:
+Same as above functionality, allows for plotting multiple mode responses over a time window on the same plot.
 
 **plot_velocity_imparted_over_time**:
 The velocity the membrane is "kicked" to everytime it encounters an impulse. Mainly this plot is used to make sure that the velocity is updating correctly. When plotted, should look somewhat like a floor function with jumps, because plotted velocity values only change when an impulse is incident.
@@ -69,21 +71,10 @@ The velocity the membrane is "kicked" to everytime it encounters an impulse. Mai
 **plot_velocity_of_mode_over_time**:
 For any specified mode, its velocity response is plotted against time.
 
-### What I'd still like to implement:
+### Potential future work:
 
 - Being able to define multiple source pressures, and superimposing the force they impart to the membrane/the responses of the membrane wrt each individual force
 - To test: different known membrane responses by plugging in proper parameters to define the membrane
 - Further verifying that the model produces the correct behvaior
-
 ---
-
-## Adam's Note on Impulse "Handling"
-
-See the file `adam-note_impulses_2024-06-28.txt` for some thoughts on
-how impulses are handled.
-
-I'd suggest focusing on implementing the impulse handling for a
-single spatial mode coefficient (e.g., w_11) and plotting its value
-over time, to make sure that's being handled properly. Then once
-that's working, move back to plotting the whole membrane response.
 

@@ -11,10 +11,13 @@ Note: at least 1 impulse_times array must be uncommented and one initialization 
 
 #impulse_times = [0]
 #impulse_times = [0, 1e-6, 2e-6, 3e-6]
-#impulse_times = [0, 9e-6, 2e-5, 3.8e-5]
+impulse_times = [0, 9e-6, 2e-5, 3.8e-5]
+#impulse_times = [0, 3.8e-5]
+deflection = membrane_response(impulse_times, dt=1e-7, t_max=5e-5, eta=10, modes=10)
+
 #impulse_times = [0, 5e-6, 10e-6, 16e-6, 21e-6, 27e-6]
-impulse_times = [0, 5.407e-6, 10.814e-6, 16.221e-6, 21.628e-6, 27.035e-6] #corresponding to exciting mode (6,5) at res freqs
-deflection = membrane_response(impulse_times, dt=1e-8, t_max=3e-5, eta=10, modes=10)
+#impulse_times = [0, 5.407e-6, 10.814e-6, 16.221e-6, 21.628e-6, 27.035e-6] #corresponding to exciting mode (6,5) at res freqs
+#deflection = membrane_response(impulse_times, dt=1e-8, t_max=3e-5, eta=10, modes=30)
 
 ### test case 2 (used for easier debugging purposes (less terminal output))
 
@@ -24,8 +27,9 @@ t, w_total, w_mn, w_mn_dot_minus, w_mn_dot, x, y, X, Y, a, b, Q, resonant_freq =
 
 
 ### this plot should be the 2-D membrane response at each timestep
-#plotting.plot_displacement(w_total, t, a, b)
-plotting.plot_point_deflection_vs_time(w_total, t, a/2, b/2, a, b) # just plotting displacement at center right now
+plotting.plot_displacement(w_total, t, a, b)
+#lotting.plot_displacement_for_poster(w_total, t, a, b)
+#plotting.plot_point_deflection_vs_time(w_total, t, a/2, b/2, a, b) # just plotting displacement at center right now
 
 ### calls the plotting fn for displacement v time
 ### commented out for now as this runs really slowly
@@ -43,14 +47,18 @@ plotting.plot_point_deflection_vs_time(w_total, t, a/2, b/2, a, b) # just plotti
 plotting.plot_individual_modes(w_mn, t, 1, 1)
 plotting.plot_velocity_imparted_over_time(w_mn_dot_minus, t, 1, 1)
 plotting.plot_velocity_of_mode_over_time(w_mn_dot, t, 1, 1)
-plotting.plot_individual_modes(w_mn, t, 6, 5)
-plotting.plot_velocity_imparted_over_time(w_mn_dot_minus, t, 6, 5)
-plotting.plot_velocity_of_mode_over_time(w_mn_dot, t, 6, 5)
-plotting.plot_individual_modes(w_mn, t, 9, 9)
-#plotting.plot_velocity_imparted_over_time(w_mn_dot_minus, t, 9, 9)
-#plotting.plot_velocity_of_mode_over_time(w_mn_dot, t, 9, 9)
+plotting.plot_individual_modes(w_mn, t, 10, 10)
+plotting.plot_velocity_imparted_over_time(w_mn_dot_minus, t, 10, 10)
+plotting.plot_velocity_of_mode_over_time(w_mn_dot, t, 10, 10)
+#plotting.plot_individual_modes(w_mn, t, 6, 6)
+#plotting.plot_velocity_imparted_over_time(w_mn_dot_minus, t, 6, 6)
+#plotting.plot_velocity_of_mode_over_time(w_mn_dot, t, 6, 6)
+#plotting.plot_individual_modes(w_mn, t, 25, 25)
+#plotting.plot_velocity_imparted_over_time(w_mn_dot_minus, t, 25, 25)
+#plotting.plot_velocity_of_mode_over_time(w_mn_dot, t, 25, 25)
+#plotting.plot_individual_modes_together(w_mn, t, 1, 2, 2, 1, 2, 5)
 
 ### contour maps for quality factor, resonant frequency 
 ### should be really similar, resonant frequency and undamped natural frequency are only offset by a really small amount
 #plotting.plot_Q(Q)
-#plotting.plot_omega_res(resonant_freq)
+plotting.plot_omega_res(resonant_freq)

@@ -1,19 +1,19 @@
-current agenda items:
+potential future agenda items:
+- superimposing multiple different impulse trains in the same window
 - more rigorous input for p0 amplitude coefficient
-- rework "results and verifications" with info about what parts of my sims will be used for future Webb group experiments
 - make main time loop inside membrane-response a function
+- plots at resonant freuqnecies
+- verifying w membrane parameters from experimental data
+
+things that have been done:
+- displacement of just a point over time
+- plotting multiple modes on the same plot
+- rework "results and verifications" with info about what parts of my sims will be used for future Webb group experiments
 - displacement vs time plots still take way too long to run, legends are gross (same with the cutout lines)
 - make script, flash cards? for poster talk
-- have option to save to svg or pdf if parameters latex = true or ppt = true
 - send webb 100 modes side by side for impulse times as shown in slides
 - send webb 100 modes side by side for impulse times at 0, more spread out impulse times
 - clean up comments throughout code so it just reads better!
-- slightly odd avg displacement response for impulse at just t = 0
-- plots at resonant freuqnecies
-displacement of just a point over time
-converge plots
-
-things that have been done:
 - for code: to implement damping condition, resonant freq, pulse the same spot diff modes diff resonant frequencies
 - velocity plots are fine now
 - make slides for tomorrow

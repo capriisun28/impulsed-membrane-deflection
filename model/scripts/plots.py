@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import matplotlib.colors as mcolors
 
 def checkpath(output_path = 'output_plots/', displacement=False, cutout=False):
         script_dir = os.path.dirname(__file__)
@@ -46,19 +47,41 @@ class plotting:
             #plt.show()
             plt.close(fig)
 
+    def plot_displacement_for_poster(w_total, t, a, b):
+        #######################################
+        # ADDED BY ADAM: Get max value for limits
+        cbar_max_val = w_total.max()
+        cbar_min_val = w_total.min()
+        if (abs(cbar_min_val) > cbar_max_val):
+            cbar_max_val = abs(cbar_min_val)
+        #######################################
+        for ti in range(0, len(t), int(len(t)/100)): # adjust later, have the factor that len(t) is divided by depend on time steps
+            fig = plt.figure(figsize=(10, 6)) # Make a new figure with specified size for every plot (will help make saved figure PNGs consistent)
+            #levels = 20
+            #plt.contourf(self.x, self.y, w_total[ti], cmap='magma', vmin=-cbar_max_val, vmax=cbar_max_val)
+            # It appears that imshow might be a better fit for this. The "vmin" and "vmax" kwargs let you set colorbar limits
+            # The "extent" specifies the axis tick label ranges
+            plt.imshow(w_total[ti], cmap='magma', interpolation='nearest', extent=[0,a,0,b], vmin=-cbar_max_val, vmax=cbar_max_val)
+            plt.colorbar(label = 'Displacement (m)')
+            plt.title(f'Time = {t[ti]:.2e} s') # Changed format specification to scientific notation
+            plt.savefig(checkpath(displacement=True) + f'displacement_{ti:03d}.png', format="png") # Changed format specification to have leading zeroes so ImageMagick plays nice with it
+            #plt.show()
+            plt.close(fig)
+
     def plot_point_deflection_vs_time(w_total, t, x, y, a, b):
         #convert (x, y) coordinates to indices
         x_idx = int((x / a) * (w_total.shape[1] - 1))
         y_idx = int((y / b) * (w_total.shape[2] - 1))
         deflection_at_point = w_total[:, x_idx, y_idx]
         plt.figure()
-        plt.plot(t, deflection_at_point, label=f'Point ({x:.3e}, {y:.3e})')
+        plt.plot(t, deflection_at_point, label=f'Point ({x:.3e}, {y:.3e})', color=mcolors.CSS4_COLORS.get("darkslateblue"))
         plt.xlabel('Time (s)')
         plt.ylabel('Deflection (m)')
         plt.title(f'Deflection vs Time at Point ({x}, {y})')
         plt.legend()
         plt.savefig(checkpath() + f'deflection_point_{x}_{y}_vs_time.png', format="png")
-        plt.show()
+        #plt.show()
+        plt.close()
     
     def plot_displacement_vs_time(w_total, t, x, y):
         plt.figure()
@@ -70,7 +93,8 @@ class plotting:
         plt.title('Displacement vs Time at Center of Membrane')
         #plt.legend()
         plt.savefig(checkpath() + 'displacement_vs_time.png', format="png")
-        plt.show()
+        #plt.show()
+        plt.close()
 
     
     def plot_avg_displacement_vs_time(w_total, t):
@@ -81,8 +105,8 @@ class plotting:
         plt.ylabel('Average Displacement (m)')
         plt.title('Average Displacement vs Time')
         plt.savefig(checkpath() + f'avg_displacement_v_time.png', format="png")
-        plt.show()
-
+        #plt.show()
+        plt.close()
     
     def plot_cutout_along_plane(t, x, y, w_total, plane='y', value=0.5):
         plt.figure()
@@ -100,7 +124,8 @@ class plotting:
         plt.title(f'Displacement along {plane}={value}')
         #plt.legend()
         plt.savefig(checkpath() + f'displacement_{plane}_{value}_cutout_{ti}.png', format="png")
-        plt.show()
+        #plt.show()
+        plt.close()
         """    
         else:
             raise ValueError("Only 'y' plane cutout is implemented.")
@@ -146,7 +171,7 @@ class plotting:
             plt.savefig(checkpath(cutout=True) + f'displacement_{plane}_{value}_timestep_{ti:03d}.png', format="png")
             #plt.show()
             plt.close(fig)
-    
+
     def plot_individual_modes(w_mn, t, m, n):
         plt.figure()
         plt.plot(t, w_mn[:, m - 1, n - 1])
@@ -155,8 +180,20 @@ class plotting:
         plt.title(f'Displacement of Mode ({m},{n}) vs Time')
         plt.legend()
         plt.savefig(checkpath() + f'individual_mode_{m}_{n}_over_time.png', format="png")
-        plt.show()
-
+        #plt.show()
+        plt.close()
+    
+    def plot_individual_modes_together(w_mn, t, m1, n1, m2, n2, m3, n3):
+        plt.figure()
+        plt.plot(t, w_mn[:, m1 - 1, n1 - 1], label=f'Mode ({m1},{n1})', color=mcolors.CSS4_COLORS.get("orchid"))
+        plt.plot(t, w_mn[:, m2 - 1, n2 - 1], label=f'Mode ({m2},{n2})', color=mcolors.CSS4_COLORS.get("lightseagreen"))
+        plt.plot(t, w_mn[:, m3 - 1, n3 - 1], label=f'Mode ({m3},{n3})', color=mcolors.CSS4_COLORS.get("mediumslatepurple"))
+        plt.ylabel('Displacement')
+        plt.title('Displacement of Modes vs Time')
+        plt.legend()
+        plt.savefig(checkpath() + 'combined_modes_over_time.png', format="png")
+        #plt.show()
+        plt.close()
     
     def plot_velocity_imparted_over_time(w_mn_dot_minus, t, m, n):
         plt.figure()
@@ -166,7 +203,8 @@ class plotting:
         plt.title(f'Velocity Imparted Over Time for Mode ({m}, {n})')
         plt.legend()
         plt.savefig(checkpath() + f'velocity_mode_{m}_{n}_imparted_over_time.png', format="png")
-        plt.show()
+        #plt.show()
+        plt.close()
 
     
     def plot_velocity_of_mode_over_time(w_mn_dot,t, m, n):
@@ -177,7 +215,8 @@ class plotting:
         plt.ylabel('Velocity (m/s)')
         plt.title(f'Velocity Over Time for Mode ({m}, {n})')
         plt.savefig(checkpath() + f'velocity_for_mode_{m}_{n}_over_time.png', format="png")
-        plt.show()
+        #plt.show()
+        plt.close()
 
     def plot_Q(Q):
         Q = Q[1:, 1:]
@@ -190,7 +229,8 @@ class plotting:
         plt.xlabel("mode #")
         plt.ylabel("mode #")
         plt.savefig(checkpath() + "q_contour_map_plotting.png", format='png')
-        plt.show()
+        #plt.show()
+        plt.close()
 
     def plot_omega_res(omega):
         omega = omega[1:, 1:]
@@ -204,4 +244,5 @@ class plotting:
         plt.xlabel("mode #")
         plt.ylabel("mode #")
         plt.savefig(checkpath() + "resonant_freq_contour_map_plotting.png", format='png')
-        plt.show()
+        #plt.show()
+        plt.close()
